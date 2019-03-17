@@ -1,0 +1,151 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="audio/inconfig l" uuid="7007d026acb7c3586f60a7f0898718d1ca7e0607" name="inconfig_1" x="14" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="gain" selection="9dB"/>
+         <combo attributeName="boost" selection="0dB"/>
+      </attribs>
+   </obj>
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="294" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-54dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="154" y="126">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="drj/ctrl/dial_pitch" uuid="86ae7d7f49093cb1c94aed72274d118a23d46692" name="dial_pitch_1____tmp" x="84" y="224">
+      <params>
+         <frac32.s.map name="pitch" value="-29.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="2710898e-2b1c-4e0f-9622-45723d38b985" name="fdbkcomb_1" x="266" y="238">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="2710898e-2b1c-4e0f-9622-45723d38b985">
+         <sDescription>samplesize variant combfilter</sDescription>
+         <author>Jürgen Schwietering</author>
+         <license>BSD</license>
+         <helpPatch>fdbkcomb.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="in"/>
+            <frac32 name="noteheight" description=""/>
+            <frac32.bipolar name="a"/>
+            <frac32.bipolar name="b"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="out"/>
+         </outlets>
+         <displays>
+            <int32.label name="samplesize"/>
+            <int32.label name="f"/>
+            <int32.label name="tf"/>
+            <int32.label name="a"/>
+            <int32.label name="b"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int16_t d[1600]; // minimum of 30 HZ (bit lower than B0)
+int32_t dpos;
+int32_t currentWidth;
+int32_t newWidth;
+int32_t lastF;
+int32_t step;]]></code.declaration>
+         <code.init><![CDATA[#define ADJUST_WIDTH 4
+
+int i;
+for (i = 0; i < sizeof(d)/sizeof(d[0]); i++)
+   d[i] = 0;
+dpos = 0;
+step = 0;
+lastF = 1<<27;
+currentWidth = 120;]]></code.init>
+         <code.krate><![CDATA[int32_t a2 = inlet_a<<4;
+int32_t b2 = inlet_b<<4;
+
+disp_a = a2;
+disp_b = b2;
+
+if (lastF != inlet_noteheight) {
+	int32_t freq;
+	MTOF(inlet_noteheight,freq);
+	newWidth = static_cast<int32_t>(0.5f+32.0f/q27_to_float(freq));     
+	lastF = inlet_noteheight;
+	if (newWidth < 10)
+		newWidth = 10;
+	if (newWidth >= sizeof(d)/sizeof(d[0]))
+		newWidth = sizeof(d)/sizeof(d[0])-1;
+}
+
+if (--step < 0)
+{
+	step = ADJUST_WIDTH;
+	if (newWidth > currentWidth)
+		++currentWidth;
+	if (newWidth < currentWidth)
+		--currentWidth;
+	disp_samplesize = currentWidth;
+}]]></code.krate>
+         <code.srate><![CDATA[int32_t dout =  d[dpos]<<16;
+int32_t din = ___SMMUL(b2,inlet_in);
+din = ___SMMLA(a2,dout,din);
+d[dpos++] = din>>15;
+outlet_out = din;
+if (dpos >= currentWidth)
+	dpos = 0;]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="audio/out left" uuid="b11a3c09b2fdd575ea8212f2ce7743d5269253b1" name="out_1" x="420" y="252">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial b" uuid="862e7d7f29093cb1ce4aed72244d118ad4d46692" name="dial_1" x="84" y="308">
+      <params>
+         <frac32.s.map name="value" value="62.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial b" uuid="862e7d7f29093cb1ce4aed72244d118ad4d46692" name="dial_2" x="84" y="392">
+      <params>
+         <frac32.s.map name="value" value="47.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="dial_pitch_1____tmp" outlet="out"/>
+         <dest obj="fdbkcomb_1" inlet="noteheight"/>
+      </net>
+      <net>
+         <source obj="fdbkcomb_1" outlet="out"/>
+         <dest obj="out_1" inlet="wave"/>
+      </net>
+      <net>
+         <source obj="in_1" outlet="wave"/>
+         <dest obj="fdbkcomb_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="dial_1" outlet="out"/>
+         <dest obj="fdbkcomb_1" inlet="a"/>
+      </net>
+      <net>
+         <source obj="dial_2" outlet="out"/>
+         <dest obj="fdbkcomb_1" inlet="b"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>1253</x>
+      <y>371</y>
+      <width>944</width>
+      <height>837</height>
+   </windowPos>
+</patch-1.0>

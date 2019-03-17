@@ -1,9 +1,9 @@
 <patch-1.0 appVersion="1.0.12">
    <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="602" y="14">
       <params>
-         <frac32.u.map name="gain1" value="20.5"/>
-         <frac32.u.map name="gain2" value="20.0"/>
-         <frac32.u.map name="gain3" value="40.0"/>
+         <frac32.u.map name="gain1" value="0.0"/>
+         <frac32.u.map name="gain2" value="29.5"/>
+         <frac32.u.map name="gain3" value="0.0"/>
       </params>
       <attribs/>
    </obj>
@@ -16,8 +16,8 @@
          <int32.hradio name="mode" value="0"/>
          <frac32.u.map name="gain" value="3.5"/>
          <frac32.s.map name="Alvl" value="28.0"/>
-         <frac32.s.map name="Blvl" value="52.0"/>
-         <frac32.s.map name="Ringlvl" value="64.0"/>
+         <frac32.s.map name="Blvl" value="30.0"/>
+         <frac32.s.map name="Ringlvl" value="24.0"/>
       </params>
       <attribs/>
    </obj>
@@ -25,81 +25,25 @@
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="63e0f057-cb03-42f1-b7f0-671d3b00175f" name="fdbkcomb_1" x="392" y="84">
+   <obj type="osc/sine lin" uuid="6a4458d598c9b8634b469d1a6e7f87971b5932f" name="sine_1" x="112" y="112">
       <params>
-         <frac32.s.map name="a" value="48.0"/>
-         <frac32.s.map name="b" value="52.0"/>
+         <frac32.u.map name="freq" value="0.0"/>
       </params>
       <attribs/>
-      <object id="patch/object" uuid="63e0f057-cb03-42f1-b7f0-671d3b00175f">
-         <sDescription></sDescription>
-         <author>Johannes Taelman</author>
-         <license>BSD</license>
-         <helpPatch>fdbkcomb.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in" description="in"/>
-            <int32 name="size"/>
-         </inlets>
-         <outlets>
-            <frac32buffer name="out" description="out"/>
-         </outlets>
-         <displays/>
-         <params>
-            <frac32.s.map.ratio name="a"/>
-            <frac32.s.map.ratio name="b"/>
-         </params>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[int16_t d[1024];
-int bufferSize;
-int dpos;]]></code.declaration>
-         <code.init><![CDATA[for (auto i=0; i < sizeof(d)/sizeof(d[0]); i++)
-   d[i] = 0;
-dpos = 0;
-bufferSize=1024;]]></code.init>
-         <code.krate><![CDATA[int32_t a2 = param_a<<4;
-int32_t b2 = param_b<<4;
-
-if (bufferSize < inlet_size)
-	++bufferSize;
-
-if (bufferSize > inlet_size)
-	--bufferSize;]]></code.krate>
-         <code.srate><![CDATA[int32_t dout =  d[dpos]<<16;
-int32_t din = ___SMMUL(b2,inlet_in);
-din = ___SMMLA(a2,dout,din);
-d[dpos++] = din>>15;
-outlet_out = din;
-if (dpos >= bufferSize) 
-	dpos = 0;]]></code.srate>
-      </object>
-   </patchobj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="frequency" x="42" y="238">
+   </obj>
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="frequency" x="14" y="224">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="e0384ec7-ded7-4e01-8cd3-2bd2a6f95fd1" name="*_1" x="252" y="280">
+   <obj type="combfilter_notedriven" uuid="3d2e4da8-de21-41a4-ba65-1c5b9cd7fb5a" name="obj_2" x="238" y="266">
       <params/>
       <attribs/>
-      <object id="patch/object" uuid="e0384ec7-ded7-4e01-8cd3-2bd2a6f95fd1">
-         <sDescription></sDescription>
-         <author>jay</author>
-         <license>BSD</license>
-         <helpPatch>timeri.axh</helpPatch>
-         <inlets>
-            <frac32 name="f"/>
-         </inlets>
-         <outlets>
-            <int32 name="out"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.krate><![CDATA[outlet_out = static_cast<int32_t>(round(48000/(inlet_f>>21)));]]></code.krate>
-      </object>
-   </patchobj>
-   <obj type="sss/filter/paraEQ" uuid="d7026ba6-245f-47a7-92a3-66d19d1ee676" name="paraEQ_1" x="532" y="280">
+   </obj>
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="gain_ring" x="14" y="308">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="sss/filter/paraEQ" uuid="d7026ba6-245f-47a7-92a3-66d19d1ee676" name="paraEQ_1" x="406" y="322">
       <params>
          <int32 name="stage" value="1"/>
          <bool32.tgl name="STorMS" value="0"/>
@@ -115,10 +59,8 @@ if (dpos >= bufferSize)
          <spinner attributeName="stages" value="2"/>
       </attribs>
    </obj>
-   <obj type="osc/sine lin" uuid="6a4458d598c9b8634b469d1a6e7f87971b5932f" name="sine_1" x="126" y="308">
-      <params>
-         <frac32.u.map name="freq" value="0.0"/>
-      </params>
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="fdbk_ring" x="14" y="364">
+      <params/>
       <attribs/>
    </obj>
    <nets>
@@ -126,7 +68,7 @@ if (dpos >= bufferSize)
          <source obj="inlet_1" outlet="inlet"/>
          <dest obj="RingMod_1" inlet="a"/>
          <dest obj="paraEQ_1" inlet="in"/>
-         <dest obj="fdbkcomb_1" inlet="in"/>
+         <dest obj="obj_2" inlet="in"/>
       </net>
       <net>
          <source obj="RingMod_1" outlet="result"/>
@@ -135,10 +77,6 @@ if (dpos >= bufferSize)
       <net>
          <source obj="sine_1" outlet="wave"/>
          <dest obj="RingMod_1" inlet="b"/>
-      </net>
-      <net>
-         <source obj="fdbkcomb_1" outlet="out"/>
-         <dest obj="mix_1" inlet="in2"/>
       </net>
       <net>
          <source obj="paraEQ_1" outlet="out"/>
@@ -151,11 +89,19 @@ if (dpos >= bufferSize)
       <net>
          <source obj="frequency" outlet="inlet"/>
          <dest obj="sine_1" inlet="freq"/>
-         <dest obj="*_1" inlet="f"/>
+         <dest obj="obj_2" inlet="pitch"/>
       </net>
       <net>
-         <source obj="*_1" outlet="out"/>
-         <dest obj="fdbkcomb_1" inlet="size"/>
+         <source obj="obj_2" outlet="outlet_1"/>
+         <dest obj="mix_1" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="gain_ring" outlet="inlet"/>
+         <dest obj="obj_2" inlet="gain"/>
+      </net>
+      <net>
+         <source obj="fdbk_ring" outlet="inlet"/>
+         <dest obj="obj_2" inlet="feedback"/>
       </net>
    </nets>
    <settings>
@@ -163,9 +109,9 @@ if (dpos >= bufferSize)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>340</x>
-      <y>172</y>
-      <width>872</width>
-      <height>591</height>
+      <x>167</x>
+      <y>398</y>
+      <width>1109</width>
+      <height>766</height>
    </windowPos>
 </patch-1.0>
