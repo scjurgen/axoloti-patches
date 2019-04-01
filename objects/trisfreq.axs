@@ -3,6 +3,10 @@
       <params/>
       <attribs/>
    </obj>
+   <obj type="patch/inlet a" uuid="b577fe41e0a6bc7b5502ce33cb8a3129e2e28ee5" name="inlet_1" x="14" y="28">
+      <params/>
+      <attribs/>
+   </obj>
    <obj type="sss/dist/RingMod" uuid="703c4d73-cdf2-4ca9-8f1a-f7d944ff99cb" name="RingMod_1" x="238" y="28">
       <params>
          <int32.hradio name="mode" value="0"/>
@@ -11,10 +15,6 @@
          <frac32.s.map name="Blvl" value="0.0"/>
          <frac32.s.map name="Ringlvl" value="64.0"/>
       </params>
-      <attribs/>
-   </obj>
-   <obj type="patch/inlet a" uuid="b577fe41e0a6bc7b5502ce33cb8a3129e2e28ee5" name="inlet_1" x="28" y="56">
-      <params/>
       <attribs/>
    </obj>
    <patchobj type="patch/object" uuid="dd92d648-1f8c-4326-8dad-f17588b5f0f1" name="sine_1" x="126" y="112">
@@ -57,19 +57,19 @@ outlet_wave= (r>>4);]]></code.srate>
       <params/>
       <attribs/>
    </obj>
-   <obj type="combfilter_notedriven" uuid="3d2e4da8-de21-41a4-ba65-1c5b9cd7fb5a" name="obj_2" x="238" y="266">
+   <obj type="combfilter_notedriven" uuid="be69ee47-a136-4340-85db-c53e8c16845c" name="obj_2" x="238" y="266">
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="gain_ring" x="14" y="308">
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="fdbk_ring" x="14" y="322">
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="fdbk_ring" x="14" y="364">
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="gain_ring" x="14" y="364">
       <params/>
       <attribs/>
    </obj>
-   <obj type="vcwah" uuid="a878eced-bb7b-4e1e-91a8-4305f526397c" name="obj_1" x="266" y="406">
+   <obj type="vcwah" uuid="38c45de3-4e0d-4aa1-acf7-3a6336f180a2" name="obj_1" x="252" y="392">
       <params>
          <frac32.u.map name="flt:reso" value="62.5"/>
       </params>
@@ -98,9 +98,9 @@ outlet_wave= (r>>4);]]></code.srate>
          <params/>
          <attribs/>
          <includes/>
-         <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,inlet_gain1);
-   accum = ___SMMLA(inlet_in2,inlet_gain2,accum);
-   accum = ___SMMLA(inlet_in3,inlet_gain3,accum);
+         <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,inlet_gain1 << 4);
+   accum = ___SMMLA(inlet_in2,inlet_gain2 << 4,accum);
+   accum = ___SMMLA(inlet_in3,inlet_gain3 << 4,accum);
    outlet_out=  __SSAT(inlet_bus__in + (accum<<1),28);]]></code.srate>
       </object>
    </patchobj>
@@ -179,8 +179,8 @@ outlet_wave= (r>>4);]]></code.srate>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>1540</x>
-      <y>553</y>
+      <x>273</x>
+      <y>75</y>
       <width>1109</width>
       <height>766</height>
    </windowPos>

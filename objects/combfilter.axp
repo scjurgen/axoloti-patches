@@ -1,0 +1,58 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="drj/ctrl/dial_pitch" uuid="86ae7d7f49093cb1c94aed72274d118a23d46692" name="dial_pitch_1" x="140" y="84">
+      <params>
+         <frac32.s.map name="pitch" value="5.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="4f7ea73b-93a0-4561-85e2-d07a39bfd4ea" name="i_1" x="308" y="112">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="4f7ea73b-93a0-4561-85e2-d07a39bfd4ea">
+         <sDescription>Calculate periodlength of frequency for 48Khz SR</sDescription>
+         <author>Jürgen Schwietering</author>
+         <license>BSD</license>
+         <helpPatch>disp.axh</helpPatch>
+         <inlets>
+            <frac32 name="in"/>
+         </inlets>
+         <outlets/>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[float NOTEFAC = pow(2.0f, 1.0f/12.0f);
+
+float lastNote = 0;
+int lastResult = 0;
+
+int musicalNoteToPeriod(const float note)
+{	if (note != lastNote) {
+		lastNote = note;
+		lastResult = 48000.0f/440.0f/powf(NOTEFAC, (note - 69.0f))+0.5f;
+	}
+     return lastResult;
+}]]></code.declaration>
+         <code.krate><![CDATA[int val = musicalNoteToPeriod(float(inlet_in)/float(1<<21)+64);
+disp_v = val;]]></code.krate>
+      </object>
+   </patchobj>
+   <nets>
+      <net>
+         <source obj="dial_pitch_1" outlet="out"/>
+         <dest obj="i_1" inlet="in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>471</x>
+      <y>122</y>
+      <width>873</width>
+      <height>493</height>
+   </windowPos>
+</patch-1.0>
