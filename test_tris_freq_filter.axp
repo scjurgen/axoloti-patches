@@ -1,0 +1,117 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="audio/inconfig" uuid="9a80ef3c19f2a8f81da3a3b7c1c44d18126b97d9" name="inconfig_1" x="28" y="0">
+      <params/>
+      <attribs>
+         <combo attributeName="gain" selection="-3dB"/>
+         <combo attributeName="boost" selection="20dB"/>
+         <combo attributeName="mode" selection="Mono(L)"/>
+      </attribs>
+   </obj>
+   <obj type="noise gate" uuid="10c9fa63-e8d9-4bd4-bff0-1e7562bd17e1" name="noise_1" x="196" y="14">
+      <params>
+         <frac32.u.map name="&gt;c_1" value="3.0"/>
+         <frac32.s.map name="envelope:a" value="-64.0"/>
+         <frac32.s.map name="envelope:d" value="-64.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="462" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-18dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="84" y="42">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="drj/ctrl/dial_pitch" uuid="86ae7d7f49093cb1c94aed72274d118a23d46692" name="dial_pitch_4" x="84" y="112">
+      <params>
+         <frac32.s.map name="pitch" value="-7.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="476" y="182">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial b" uuid="862e7d7f29093cb1ce4aed72244d118ad4d46692" name="fdbk_comb" x="84" y="196">
+      <params>
+         <frac32.s.map name="value" value="63.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="trisfreq" uuid="909e0d2d-66bd-4f93-9c25-81fd85745d99" name="trisfreq_1" x="322" y="224">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="mix comb" x="84" y="280">
+      <params>
+         <frac32.u.map name="value" value="64.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="mix ring" x="84" y="364">
+      <params>
+         <frac32.u.map name="value" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="mix wah" x="84" y="448">
+      <params>
+         <frac32.u.map name="value" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="trisfreq_1" outlet="outlet_1"/>
+         <dest obj="out_1" inlet="left"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+      <net>
+         <source obj="dial_pitch_4" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="fdbk_comb" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="comb_feedback"/>
+      </net>
+      <net>
+         <source obj="mix ring" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="ring_gain"/>
+      </net>
+      <net>
+         <source obj="mix comb" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="comb_gain"/>
+      </net>
+      <net>
+         <source obj="mix wah" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="wah_gain"/>
+      </net>
+      <net>
+         <source obj="noise_1" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="inlet_1"/>
+      </net>
+      <net>
+         <source obj="in_1" outlet="wave"/>
+         <dest obj="noise_1" inlet="in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+      <MidiChannel>1</MidiChannel>
+      <NPresets>8</NPresets>
+      <NPresetEntries>32</NPresetEntries>
+      <NModulationSources>8</NModulationSources>
+      <NModulationTargetsPerSource>8</NModulationTargetsPerSource>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>136</x>
+      <y>68</y>
+      <width>629</width>
+      <height>756</height>
+   </windowPos>
+</patch-1.0>
