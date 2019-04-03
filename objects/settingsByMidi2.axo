@@ -1,0 +1,133 @@
+<objdefs appVersion="1.0.12">
+   <obj.normal id="settingsByMidi2" uuid="0718259f-7ed5-42b3-82a7-1f7bfefcb5b6">
+      <author>JS</author>
+      <license>BSD</license>
+      <inlets/>
+      <outlets/>
+      <displays/>
+      <params/>
+      <attribs/>
+      <depends>
+         <depend>SD2</depend>
+      </depends>
+      <code.declaration><![CDATA[Thread* Thd;
+
+struct MidiData {
+	uint8_t cc[16][256];
+	bool newVal[16][256];
+	uint8_t notes[16];
+} __attribute__ ((section (".sdram"))) dataSet = {};
+
+
+int32_t midiHeight = 0;
+uint8_t midiBytes[3];
+uint8_t midiCurData;
+uint8_t midiNumData;
+
+uint8_t StatusToMsgLength(uint8_t t)
+{
+    switch (t)
+    {
+        case 0x0:
+        case 0x1:
+        case 0x2:
+        case 0x3:
+        case 0x4:
+        case 0x5:
+        case 0x6:
+        case 0x7: return 0;
+        case 0x8:
+        case 0x9:
+        case 0xa:
+        case 0xb: return 3;
+        case 0xc:
+        case 0xd: return 2;
+        case 0xe: return 3;
+        default: return -1;
+    }
+}
+
+void MidiInByteHandler(uint8_t data)
+{
+    int8_t len;
+    if (data & 0x80)
+    {
+        len = StatusToMsgLength(data >> 4);
+        midiBytes[0] = data;
+        midiNumData  = len - 1;
+        midiCurData  = 0;
+    }
+    else
+    {
+        if (midiCurData == 0)
+        {
+            midiBytes[1] = data;
+            midiCurData++;
+        }
+        else if (midiCurData == 1)
+        {
+            midiBytes[2] = data;
+            if (midiNumData == 2)
+            {
+            	 auto channel = midiBytes[0] & 0x0f;
+                if ((midiBytes[0]>>4) == 0xB)
+                {
+                	auto cc = midiBytes[1];
+                	auto value = midiBytes[2];
+               	dataSet.cc[channel][cc] = value;
+               	dataSet.newVal[channel][cc] = true;
+                    LogTextMessage("%02x, %02x, %02x", midiBytes[0], cc, value);
+                }
+                else if ((midiBytes[0]>>4) == 0x9)
+                {
+                	dataSet.notes[channel] = midiBytes[1];
+                    LogTextMessage("%02x, %02x, %02x", midiBytes[0], midiBytes[1], midiBytes[2]);
+                }
+                midiCurData = 0;
+            }
+        }
+    }
+}
+
+msg_t ThreadX2()
+{
+#if CH_USE_REGISTRY
+    chRegSetThreadName("serial2 thread"); 
+#endif
+
+    midiNumData = 0;
+    midiCurData = 0;
+
+    sdPut(&SD2, 0xFF);
+
+    while (!chThdShouldTerminate())
+    {
+        while (!sdGetWouldBlock(&SD2))
+        {
+            uint8_t ch = sdGet(&SD2);
+            LogTextMessage("v=%02x", (int) ch);
+            MidiInByteHandler(ch);
+        }
+        chThdSleepMilliseconds(1);
+    }
+    chThdExit((msg_t) 0);
+}
+
+static msg_t EuxoButPot(void* arg)
+{
+    ((attr_parent*) arg)->ThreadX2();
+}
+
+WORKING_AREA(waEuxoButPot, 256);]]></code.declaration>
+      <code.init><![CDATA[palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7)|PAL_MODE_INPUT);// RX
+palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));// TX
+
+static const SerialConfig sd2Cfg = {115200, 0, 0, 0}; // set to midi baud rate but works also with higher baud rates.
+sdStart(&SD2, &sd2Cfg);
+
+Thd = chThdCreateStatic(waEuxoButPot, sizeof(waEuxoButPot), NORMALPRIO, EuxoButPot, (void *)this);]]></code.init>
+      <code.dispose><![CDATA[chThdTerminate(Thd);
+chThdWait(Thd);
+sdStop(&SD2);]]></code.dispose>
+   </obj.normal>
+</objdefs>

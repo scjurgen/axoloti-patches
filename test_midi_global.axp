@@ -1,10 +1,9 @@
 <patch-1.0 appVersion="1.0.12">
-   <patchobj type="patch/object" uuid="8987539f-fb0a-4bc3-bf8a-bbd8478fe3ec" name="button_pot_1" x="126" y="14">
+   <patchobj type="patch/object" uuid="8987539f-fb0a-4bc3-bf8a-bbd8478fe3ec" name="midi2" x="126" y="14">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="8987539f-fb0a-4bc3-bf8a-bbd8478fe3ec">
-         <sDescription></sDescription>
-         <author>Paul</author>
+         <author>JS</author>
          <license>BSD</license>
          <inlets/>
          <outlets/>
@@ -14,10 +13,13 @@
          <includes/>
          <code.declaration><![CDATA[Thread* Thd;
 
-extern int8_t globalBlobCC[16][256];
-extern int8_t globalNotes[16];
+struct MidiData {
+	uint8_t cc[16][256];
+	bool newVal[16][256];
+	uint8_t notes[16];
+} __attribute__ ((section (".sdram"))) dataSet = {};
 
-int32_t pots[8] ={0,0,0,0, 0,0,0,0};
+
 int32_t midiHeight = 0;
 uint8_t midiBytes[3];
 uint8_t midiCurData;
@@ -68,14 +70,18 @@ void MidiInByteHandler(uint8_t data)
             midiBytes[2] = data;
             if (midiNumData == 2)
             {
+            	 auto channel = midiBytes[0] & 0x0f;
                 if ((midiBytes[0]>>4) == 0xB)
                 {
-               	globalBlob[midiBytes[0]&0x0f][midiBytes[1]] = midiBytes[2];
-                    LogTextMessage("%02x, %02x, %02x", midiBytes[0], midiBytes[1], midiBytes[2]);
+                	auto cc = midiBytes[1];
+                	auto value = midiBytes[2];
+               	dataSet.cc[channel][cc] = value;
+               	dataSet.newVal[channel][cc] = true;
+                    LogTextMessage("%02x, %02x, %02x", midiBytes[0], cc, value);
                 }
                 else if ((midiBytes[0]>>4) == 0x9)
                 {
-                	globalNotes[midiBytes[0] & 0x0f] = midiBytes[1];
+                	dataSet.notes[channel] = midiBytes[1];
                     LogTextMessage("%02x, %02x, %02x", midiBytes[0], midiBytes[1], midiBytes[2]);
                 }
                 midiCurData = 0;
@@ -87,8 +93,7 @@ void MidiInByteHandler(uint8_t data)
 msg_t ThreadX2()
 {
 #if CH_USE_REGISTRY
-is this used?
-    chRegSetThreadName("euxo button pot"); // define thread name
+    chRegSetThreadName("serial2 thread"); 
 #endif
 
     midiNumData = 0;
@@ -113,6 +118,7 @@ static msg_t EuxoButPot(void* arg)
 {
     ((attr_parent*) arg)->ThreadX2();
 }
+
 WORKING_AREA(waEuxoButPot, 256);]]></code.declaration>
          <code.init><![CDATA[palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7)|PAL_MODE_INPUT);// RX
 palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));// TX
@@ -120,27 +126,132 @@ palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));// TX
 static const SerialConfig sd2Cfg = {115200, 0, 0, 0}; // set to midi baud rate but works also with higher baud rates.
 sdStart(&SD2, &sd2Cfg);
 
-Thd = chThdCreateStatic(waEuxoButPot, sizeof(waEuxoButPot),NORMALPRIO, EuxoButPot, (void *)this);]]></code.init>
+Thd = chThdCreateStatic(waEuxoButPot, sizeof(waEuxoButPot), NORMALPRIO, EuxoButPot, (void *)this);]]></code.init>
          <code.dispose><![CDATA[chThdTerminate(Thd);
 chThdWait(Thd);
 sdStop(&SD2);]]></code.dispose>
-         <code.krate><![CDATA[outlet_pot1 = this->pot[0];
-outlet_pot2 = this->pot[1];
-outlet_pot3 = this->pot[2];
-outlet_pot4 = this->pot[3];
-outlet_pot5 = this->pot[4];
-outlet_pot6 = this->pot[5];
-
-
-outlet_height = this->height;
-disp_d1 = attr_channel;]]></code.krate>
       </object>
    </patchobj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="238" y="70">
+      <params/>
+      <attribs/>
+   </obj>
    <obj type="audio/in stereo" uuid="99848ad6d90a8e615e83b2e619cfc806f28e7281" name="in_1" x="14" y="112">
       <params/>
       <attribs/>
    </obj>
-   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="126" y="112">
+   <obj type="disp/dial b" uuid="9ffed04e6a3052d9001eda83bae7024cb6d17037" name="dial_4" x="308" y="196">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="5739ce21-cb14-499e-a493-14d2168cf981" name="cc_1" x="70" y="252">
+      <params/>
+      <attribs>
+         <objref attributeName="sender" obj="midi2"/>
+         <combo attributeName="channel" selection="0"/>
+      </attribs>
+      <object id="patch/object" uuid="5739ce21-cb14-499e-a493-14d2168cf981">
+         <sDescription></sDescription>
+         <author>Juergen Schwietering</author>
+         <license>BSD</license>
+         <helpPatch>midi_in.axh</helpPatch>
+         <inlets/>
+         <outlets>
+            <frac32 name="feedbackComb"/>
+            <frac32.positive name="gainComb"/>
+            <frac32.positive name="gainRing"/>
+            <frac32.positive name="gainVcf"/>
+            <frac32 name="pitch"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs>
+            <objref name="sender"/>
+            <combo name="channel">
+               <MenuEntries>
+                  <string>0</string>
+                  <string>1</string>
+                  <string>2</string>
+                  <string>3</string>
+                  <string>4</string>
+                  <string>5</string>
+                  <string>6</string>
+                  <string>7</string>
+                  <string>8</string>
+                  <string>9</string>
+                  <string>10</string>
+                  <string>11</string>
+                  <string>12</string>
+                  <string>13</string>
+                  <string>14</string>
+                  <string>15</string>
+               </MenuEntries>
+               <CEntries>
+                  <string>0</string>
+                  <string>1</string>
+                  <string>2</string>
+                  <string>3</string>
+                  <string>4</string>
+                  <string>5</string>
+                  <string>6</string>
+                  <string>7</string>
+                  <string>8</string>
+                  <string>9</string>
+                  <string>10</string>
+                  <string>11</string>
+                  <string>12</string>
+                  <string>13</string>
+                  <string>14</string>
+                  <string>15</string>
+               </CEntries>
+            </combo>
+         </attribs>
+         <includes/>
+         <code.declaration><![CDATA[/*local data*/
+
+void setByCC(int32_t &target, int8_t cc, int8_t add=0)
+{
+     auto val = attr_sender.dataSet.cc[attr_channel][cc];
+	
+     if (attr_sender.dataSet.newVal[attr_channel][cc])
+     {
+          attr_sender.dataSet.newVal[attr_channel][cc] = false;
+          LogTextMessage("[%d:%d] received %d", attr_channel, cc, val);
+     }
+     target = (val+add)<<20;
+}
+
+void setByNoteOn(int32_t &target)
+{
+	auto val = attr_sender.dataSet.notes[attr_channel];
+     target = (val-64)<<21;
+}]]></code.declaration>
+         <code.init><![CDATA[/*init code */]]></code.init>
+         <code.dispose><![CDATA[/*dispose */]]></code.dispose>
+         <code.krate><![CDATA[/*k-rate */
+
+
+setByCC(outlet_feedbackComb, 33, -64);
+setByCC(outlet_gainComb, 91);
+setByCC(outlet_gainRing, 92);
+setByCC(outlet_gainVcf, 93);
+setByNoteOn(outlet_pitch);]]></code.krate>
+         <code.srate><![CDATA[/*s-rate */]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="disp/dial p" uuid="44fd18b562e434b3230441681132dbeabb15cdc5" name="dial_3" x="308" y="280">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/dial p" uuid="44fd18b562e434b3230441681132dbeabb15cdc5" name="dial_2" x="308" y="364">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/dial p" uuid="44fd18b562e434b3230441681132dbeabb15cdc5" name="dial_1" x="308" y="448">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/dial b" uuid="9ffed04e6a3052d9001eda83bae7024cb6d17037" name="dial_5" x="308" y="532">
       <params/>
       <attribs/>
    </obj>
@@ -153,15 +264,35 @@ disp_d1 = attr_channel;]]></code.krate>
          <source obj="in_1" outlet="right"/>
          <dest obj="out_1" inlet="right"/>
       </net>
+      <net>
+         <source obj="cc_1" outlet="gainVcf"/>
+         <dest obj="dial_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="gainRing"/>
+         <dest obj="dial_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="gainComb"/>
+         <dest obj="dial_3" inlet="in"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="feedbackComb"/>
+         <dest obj="dial_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="pitch"/>
+         <dest obj="dial_5" inlet="in"/>
+      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>851</x>
-      <y>237</y>
-      <width>400</width>
-      <height>400</height>
+      <x>116</x>
+      <y>407</y>
+      <width>1012</width>
+      <height>904</height>
    </windowPos>
 </patch-1.0>
