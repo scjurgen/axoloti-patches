@@ -1,5 +1,5 @@
 <patch-1.0 appVersion="1.0.12">
-   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="1176" y="0">
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="1302" y="0">
       <params/>
       <attribs>
          <combo attributeName="headphones" selection="-18dB"/>
@@ -14,13 +14,49 @@
          <combo attributeName="mode" selection="Mono(L)"/>
       </attribs>
    </obj>
-   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="980" y="42">
+   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_1" x="126" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="pad" selection="PB0"/>
+         <combo attributeName="mode" selection="pullup"/>
+      </attribs>
+   </obj>
+   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_1" x="224" y="14">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="gpio/out/led2" uuid="3d7a4c75d1f9901181a17ba5de752782de911803" name="led2_1" x="294" y="14">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_2" x="392" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="pad" selection="PB1"/>
+         <combo attributeName="mode" selection="pullup"/>
+      </attribs>
+   </obj>
+   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_2" x="490" y="14">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="gpio/out/led1" uuid="c6679540460d64e2e71760e61cb82fac227e2764" name="led1_1" x="560" y="14">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="392" y="98">
       <params>
-         <frac32.s.map name="freq" value="46.0"/>
+         <frac32.u.map name="gain1" value="64.0"/>
+         <frac32.u.map name="gain2" value="20.0"/>
+         <frac32.u.map name="gain3" value="0.0"/>
       </params>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d" name="gain_1" x="140" y="56">
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="42" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d" name="gain_1" x="140" y="112">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d">
@@ -45,11 +81,17 @@ else
 	outlet_out = 0;]]></code.srate>
       </object>
    </patchobj>
-   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="42" y="112">
+   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="574" y="112">
+      <params>
+         <frac32.s.map name="freq" value="12.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_1" x="868" y="252">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="308" y="140">
+   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="350" y="294">
       <params/>
       <attribs>
          <spinner attributeName="maxDelayInSeconds" value="20"/>
@@ -123,38 +165,15 @@ outlet_out2 = vals[2];
 outlet_out3 = vals[3];]]></code.srate>
       </object>
    </patchobj>
-   <obj type="mix/mix 4 g" uuid="36f472cd81da2e17bd4b4ee11b53b4c82527220c" name="mix_3" x="1078" y="140">
+   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="182" y="322">
       <params>
-         <frac32.u.map name="gain1" value="44.5"/>
-         <frac32.u.map name="gain2" value="64.0"/>
-         <frac32.u.map name="gain3" value="32.0"/>
-         <frac32.u.map name="gain4" value="32.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="mix/mix 5 g" uuid="56b1acd0e073b180352b138775add006ce52ee35" name="mix_2" x="910" y="154">
-      <params>
-         <frac32.u.map name="gain1" value="18.5"/>
-         <frac32.u.map name="gain2" value="26.5"/>
-         <frac32.u.map name="gain3" value="25.5"/>
-         <frac32.u.map name="gain4" value="27.0"/>
-         <frac32.u.map name="gain5" value="0.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1190" y="154">
-      <params/>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="28" y="196">
-      <params>
-         <int32 name="bpm" value="91"/>
+         <int32 name="bpm" value="98"/>
          <int32 name="div" value="2"/>
-         <int32 name="total" value="8"/>
+         <int32 name="total" value="12"/>
          <int32 name="tap1" value="1"/>
          <int32 name="tap2" value="4"/>
-         <int32 name="tap3" value="5"/>
-         <int32 name="tap4" value="3"/>
+         <int32 name="tap3" value="7"/>
+         <int32 name="tap4" value="10"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753">
@@ -217,44 +236,759 @@ disp_d1 = outlet_samplesTotal;
 disp_d2 = outlet_tap1;]]></code.krate>
       </object>
    </patchobj>
-   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="182" y="196">
+   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="602" y="322">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9">
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32 name="level1"/>
+            <frac32 name="level2"/>
+            <frac32 name="level3"/>
+            <frac32 name="level4"/>
+         </inlets>
+         <outlets>
+            <frac32 name="pitch1"/>
+            <frac32 name="combfdbk1"/>
+            <frac32 name="comblevel1"/>
+            <frac32 name="ringlevel1"/>
+            <frac32 name="vcflevel1"/>
+            <frac32 name="level1"/>
+            <frac32 name="pitch2"/>
+            <frac32 name="combfdbk2"/>
+            <frac32 name="comblevel2"/>
+            <frac32 name="ringlevel2"/>
+            <frac32 name="vcflevel2"/>
+            <frac32 name="level2"/>
+            <frac32 name="pitch3"/>
+            <frac32 name="combfdbk3"/>
+            <frac32 name="comblevel3"/>
+            <frac32 name="ringlevel3"/>
+            <frac32 name="vcflevel3"/>
+            <frac32 name="level3"/>
+            <frac32 name="pitch4"/>
+            <frac32 name="combfdbk4"/>
+            <frac32 name="comblevel4"/>
+            <frac32 name="ringlevel4"/>
+            <frac32 name="vcflevel4"/>
+            <frac32 name="level4"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int count = 0;
+int initialize = 0;
+int lastValue[128];
+int queueHead = 0;
+int queueTail = 0;
+int inQueue = 0;
+uint8_t midiQueue[1024]; // we need quite a lot because setting all APC key25 values are 53 values
+const int32_t gainValues[4] = {float_to_q27(0.0),float_to_q27(0.5),float_to_q27(0.75),float_to_q27(0.999)}; 
+const int32_t fdbkValues[4] = {float_to_q27(0.0),float_to_q27(0.9),float_to_q27(0.97),float_to_q27(0.99)}; 
+int32_t pitchValue[4] = {(-12)<<21,0<<21, 3 << 21, 11<<21};
+int32_t combGainValue[4] =  {float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0)};
+int32_t combFeedbackValue[4]={float_to_q27(0.9), float_to_q27(0.95), float_to_q27(0.9), float_to_q27(0.9)};
+int32_t ringGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9)};
+int32_t vcfGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9), float_to_q27(0.0)};
+int32_t outGain[4] = {float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999)};
+
+int8_t combGainSet[4] = {3,3,3,3};
+int8_t combFdbkSet[4] = {2,2,2,2};
+int8_t combRingSet[4] = {0,0,0,1};
+int8_t combVcfSet[4] = {0,0,1,0};
+
+int programmingTone = -1;
+
+
+
+const int cursorKeyIndex = 40;
+const int sceneKeyIndex = 48;
+const int cursorKeysNote = 64;
+const int sceneKeysNote = 82;
+int32_t lastLevel[4];
+
+
+
+/*
+ * return 0 for off
+ * 1 for first level
+ * 5 for second level
+ * 3 for highest level
+ */
+int ledLevel(int32_t value, int32_t limit1=float_to_q27(0.5), int32_t limit2=float_to_q27(0.75))
+{
+	if (value==0)
+		return 0;
+	if (value <= limit1)
+		return 1;
+	if (value <= limit2)
+		return 5;
+	return 3;	
+}
+
+void setStatus()
+{
+	for (int c=0; c < 4; ++c)
+	{
+		auto value = ledLevel(combGainValue[c]);
+		setMatrixChannelValue(c,0,value);
+		value = ledLevel(combFeedbackValue[c], float_to_q27(0.9), float_to_q27(0.97));
+		setMatrixChannelValue(c,1,value);
+		value = ledLevel(ringGainValue[c]);
+		setMatrixChannelValue(c,2,value);
+		value = ledLevel(vcfGainValue[c]);
+		setMatrixChannelValue(c,3,value);
+	}
+}
+
+void setButtonKey(uint8_t index, uint8_t value)
+{
+	AddMidiMessage(MIDI_NOTE_ON, index, value); 
+}
+
+void resetAll(uint8_t value)
+{
+	for (auto i=0; i < 40; ++i)
+	{
+		setButtonKey(i, value);
+	}
+	for (auto i=0; i < 8; ++i)
+	{
+		setButtonKey(cursorKeysNote+i, value);
+	}
+	for (auto i=0; i < 6; ++i)
+	{
+		setButtonKey(sceneKeysNote+i, value);
+	}
+}
+
+void feedQueue(uint8_t value)
+{
+	inQueue++;
+	midiQueue[queueHead++] = value;
+	if (queueHead >= sizeof(midiQueue)/sizeof(midiQueue[0]))
+		queueHead = 0;	
+}
+
+int countFood() 
+{
+	return inQueue;
+}
+
+uint8_t eatQueue()
+{
+	auto value = midiQueue[queueTail++];
+	if (queueTail >= sizeof(midiQueue)/sizeof(midiQueue[0]))
+		queueTail = 0;	
+	inQueue--;
+	return value;
+}
+
+void AddMidiMessage(uint8_t status, uint8_t data1, uint8_t data2)
+{
+	feedQueue(status);
+	feedQueue(data1);
+	feedQueue(data2);
+}
+
+
+const int8_t smallNumberFont[20] = {31, 31, 0,  31, 23, 29, 21, 31, 28, 15,
+                                    29, 23, 31, 23, 16, 31, 21, 21, 29, 31};
+
+const int8_t digitsAndLetter[41 * 3] = {
+    31, 17, 31, 0,  31, 0,  23, 21, 29, 21, 21, 31, 28, 4,  15, 29, 21, 23,
+    31, 21, 23, 16, 16, 31, 31, 21, 31, 28, 20, 31, 31, 20, 31, 31, 21, 27,
+    31, 17, 17, 31, 17, 14, 31, 21, 21, 31, 20, 16, 31, 17, 23, 31, 4,  31,
+    0,  31, 0,  3,  1,  31, 31, 4,  27, 31, 1,  1,  31, 8,  31, 15, 4,  30,
+    31, 17, 31, 31, 20, 28, 30, 18, 31, 31, 20, 11, 29, 21, 23, 16, 31, 16,
+    31, 1,  31, 30, 1,  30, 31, 2,  31, 27, 4,  27, 24, 7,  24, 19, 21, 25, // Z
+    0,  29, 0,                                                              // !
+    4,  31, 4,                                                              // +
+    4,  4,  4,                                                              // -
+    31, 5,  6,                                                              // b
+    31, 10, 31,                                                             //#
+};
+
+uint8_t currentMatrix[5][8];
+uint8_t newMatrix[5][8];
+
+void clearAll(int value)
+{
+  for (int x = 0; x < 8; ++x) {
+    for (int y = 0; y < 5; ++y) {
+    	currentMatrix[y][x] = value-1;
+    	newMatrix[y][x] = value;
+    }
+  }
+	
+}
+
+void renderNewMatrix() {
+  for (int x = 0; x < 8; ++x) {
+    for (int y = 0; y < 5; ++y) {
+      if (newMatrix[y][x] != currentMatrix[y][x]) {
+      	//LogTextMessage("pos %d, value %d", x + y * 8, newMatrix[y][x]);
+      	AddMidiMessage(0x90, x + y * 8, newMatrix[y][x]); 
+          currentMatrix[y][x] = newMatrix[y][x];
+      }
+    }
+  }
+}
+
+void setMatrixColumn(int x, int value, int8_t color) {
+  if (x >= 8)
+    return;
+  for (int y = 0; y < 5; ++y) 
+  {
+    if ((value & 0x01) == 1) 
+      newMatrix[y][x] = color;
+    else
+      newMatrix[y][x] = 0;
+    value >>= 1;
+  }
+}
+void setMatrixChannelValue(int c, int paramY, int8_t color) {
+  if (c >= 4)
+    return;
+  newMatrix[paramY][c*2] = color;
+}
+
+void setText(int8_t x, char value, int8_t color=1) {
+  int index = -1;
+  if ((value >= '0') && (value <= '9'))
+    index = (value - '0') * 3;
+  if ((value >= 'A') && (value <= 'Z'))
+    index = (value - 'A' + 10) * 3;
+  if ((value >= 'a') && (value <= 'z'))
+    index = (value - 'a' + 10) * 3;
+  if (index >= 0) {
+    setMatrixColumn(x++, digitsAndLetter[index++], color);
+    setMatrixColumn(x++, digitsAndLetter[index++], color);
+    setMatrixColumn(x++, digitsAndLetter[index++], color);
+    setMatrixColumn(x, 0, color);
+  }
+}
+
+void setSmallNumber(int8_t x, int value, int8_t color=1) {
+  setMatrixColumn(x++, smallNumberFont[value * 2], color);
+  setMatrixColumn(x++, smallNumberFont[value * 2 + 1], color);
+  setMatrixColumn(x, 0, color);
+}
+
+void updateLevel(int channel, int32_t level)
+{
+	level >>= 23;
+	//LogTextMessage("%d", level);
+
+	auto idx = channel*2+1;
+	newMatrix[0][idx] = level>2?1:0;
+	newMatrix[1][idx] = level>3?1:0;
+	newMatrix[2][idx] = level>4?1:0;
+	newMatrix[3][idx] = level>5?5:0;
+	newMatrix[4][idx] = level>6?3:0;
+}
+
+
+void setTrisValue(int row, int channel)
+{
+	switch(row)
+	{
+		case 0:combGainSet[channel]++; 
+			if (combGainSet[channel] >=4)
+				combGainSet[channel] = 0;
+			combGainValue[channel] = gainValues[combGainSet[channel]];
+			LogTextMessage("Gain comb %d %d", channel, combGainValue[channel]);
+			break;
+		case 1:combFdbkSet[channel]++; 
+			if (combFdbkSet[channel] >=4)
+				combFdbkSet[channel] = 0;
+			combFeedbackValue[channel] = fdbkValues[combFdbkSet[channel]];
+			LogTextMessage("Fdbk comb %d %d", channel, combFeedbackValue[channel]);
+			break;
+		case 2:combRingSet[channel]++; 
+			if (combRingSet[channel] >=4)
+				combRingSet[channel] = 0;
+			ringGainValue[channel] = gainValues[combRingSet[channel]];
+			LogTextMessage("Gain ring %d %d", channel, ringGainValue[channel]);
+			break;
+		case 3:combVcfSet[channel]++; 
+			if (combVcfSet[channel] >=4)
+				combVcfSet[channel] = 0;
+			vcfGainValue[channel] = gainValues[combVcfSet[channel]];
+			LogTextMessage("Gain vcf %d %d", channel, vcfGainValue[channel]);
+			break;
+	}
+	setStatus();
+}
+
+void ProgramNote(int height, int velo)
+{
+	if (programmingTone >= 0)
+	{
+		pitchValue[programmingTone] = (height - 64) << 21;
+		setProgrammingTone(programmingTone);
+	}
+}
+
+void setProgrammingTone(int channel)
+{
+	if (programmingTone == -1)
+	{
+		AddMidiMessage(0x90, cursorKeysNote+channel*2,2);
+		AddMidiMessage(0x90, cursorKeysNote+channel*2+1,2);
+		programmingTone = channel;
+	}
+	else
+	{
+		AddMidiMessage(0x90, cursorKeysNote+channel*2,0);
+		AddMidiMessage(0x90, cursorKeysNote+channel*2+1,0);
+		programmingTone = -1;	
+	}
+}
+
+void SetVolumeLevel(int channel, int level)
+{
+	outGain[channel] = float_to_q27((float)level/128.0);
+	//LogTextMessage("%d", outGain[channel]);
+}]]></code.declaration>
+         <code.init><![CDATA[clearAll(0);
+setStatus();]]></code.init>
+         <code.krate><![CDATA[static int countUp=0;
+static int beat = 3000;
+
+
+outlet_pitch1=pitchValue[0];
+outlet_pitch2=pitchValue[1];
+outlet_pitch3=pitchValue[2];
+outlet_pitch4=pitchValue[3];
+outlet_comblevel1=combGainValue[0];
+outlet_comblevel2=combGainValue[1];
+outlet_comblevel3=combGainValue[2];
+outlet_comblevel4=combGainValue[3];
+outlet_combfdbk1=combFeedbackValue[0];
+outlet_combfdbk2=combFeedbackValue[1];
+outlet_combfdbk3=combFeedbackValue[2];
+outlet_combfdbk4=combFeedbackValue[3];
+outlet_ringlevel1=ringGainValue[0];
+outlet_ringlevel2=ringGainValue[1];
+outlet_ringlevel3=ringGainValue[2];
+outlet_vcflevel4=ringGainValue[3];
+outlet_vcflevel1=vcfGainValue[0];
+outlet_vcflevel2=vcfGainValue[1];
+outlet_vcflevel3=vcfGainValue[2];
+outlet_vcflevel4=vcfGainValue[3];
+outlet_level1=outGain[0];
+outlet_level2=outGain[1];
+outlet_level3=outGain[2];
+outlet_level4=outGain[3];
+
+beat--;
+if (beat <=0)
+{
+	renderNewMatrix();
+	beat = 100;
+
+	if (inlet_level1 != lastLevel[0])
+	{
+		updateLevel(0, inlet_level1);
+		lastLevel[0] = inlet_level1;
+	}
+	if (inlet_level2 != lastLevel[1])
+	{
+		updateLevel(1, inlet_level2);
+		lastLevel[1] = inlet_level2;
+	}
+	if (inlet_level3 != lastLevel[2])
+	{
+		updateLevel(2, inlet_level3);
+		lastLevel[2] = inlet_level3;
+	}
+	if (inlet_level4 != lastLevel[3])
+	{
+		updateLevel(3, inlet_level4);
+		lastLevel[3] = inlet_level4;
+	}
+}
+
+auto foodCnt = countFood();
+
+if (foodCnt)
+{
+	auto len = MidiGetOutputBufferAvailable(MIDI_DEVICE_USB_HOST);
+	//LogTextMessage("food: %d, midilen %d", countFood(), len);
+	if (len >= 3)
+	{
+		auto status = eatQueue();
+		uint8_t value2, value3;
+		switch(status & 0xF0)
+		{
+			case 0x80:
+			case 0x90:
+			case 0xA0:
+			case 0xB0:
+			case 0xE0:
+				value2 = eatQueue();
+				value3 = eatQueue();
+				MidiSend3(MIDI_DEVICE_USB_HOST, 1, status, value2, value3); 
+				break;
+			case 0xC0:
+			case 0xD0:
+				value2 = eatQueue();
+				MidiSend2(MIDI_DEVICE_USB_HOST, 1, status, value2); 
+				break;
+			
+		}
+	}
+}]]></code.krate>
+         <code.midihandler><![CDATA[//LogTextMessage("value: %02x %02x %02x", status, data1, data2);
+
+
+if (status == (MIDI_NOTE_ON | 1))
+{
+	LogTextMessage("note on %d", data1);
+	ProgramNote(data1, data2);
+}
+
+if (status == (MIDI_NOTE_OFF | 1))
+{
+	LogTextMessage("note off %d", data1);
+}
+
+if ((status == MIDI_NOTE_ON) || (status == MIDI_NOTE_OFF))
+{
+	char *onOff;
+	if (status == MIDI_NOTE_ON)
+		onOff = "on";
+	else
+		onOff = "off";
+	if (data1 < 55)
+	{
+		int channel = (data1/2)%4;
+		int row = data1/8;
+		if ((data1 %2) == 0)
+		{
+			if (status == MIDI_NOTE_ON)
+				setTrisValue(row, channel);
+		}
+		else
+		{
+			if (data1/8 == 0)
+			{
+				if (status == MIDI_NOTE_ON)
+					setProgrammingTone(data1/2);
+			}
+		}
+		LogTextMessage("matrix button %d %s", data1, onOff);
+		
+	}else if (data1 >= 64 && data1 <= 71)
+	{
+		LogTextMessage("channel button %d %s", data1-64, onOff);
+	}else
+	switch(data1)
+	{
+		case 81: LogTextMessage("stop all %s", onOff); break;
+		case 82: LogTextMessage("scene clip stop %s", onOff); break;
+		case 83: LogTextMessage("scene solo %s", onOff); break;
+		case 84: LogTextMessage("scene rec arm %s", onOff); break;
+		case 85: LogTextMessage("scene mute %s", onOff); break;
+		case 86: LogTextMessage("scene select %s", onOff); break;
+		case 91: LogTextMessage("play/pause %s", onOff); break;
+		case 93: LogTextMessage("record %s", onOff); break;
+		case 98: LogTextMessage("shift %s", onOff); break;
+	}
+}
+
+
+if (status == MIDI_CONTROL_CHANGE)
+{
+	if ((data1>=48 && data1<=51))
+	{
+		SetVolumeLevel(data1-48, data2);		
+	}
+}]]></code.midihandler>
+      </object>
+   </patchobj>
+   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_2" x="868" y="378">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="mix/mix 5 g" uuid="56b1acd0e073b180352b138775add006ce52ee35" name="mix_2" x="1064" y="406">
       <params>
          <frac32.u.map name="gain1" value="64.0"/>
-         <frac32.u.map name="gain2" value="54.5"/>
-         <frac32.u.map name="gain3" value="0.0"/>
+         <frac32.u.map name="gain2" value="64.0"/>
+         <frac32.u.map name="gain3" value="64.0"/>
+         <frac32.u.map name="gain4" value="64.0"/>
+         <frac32.u.map name="gain5" value="64.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_1" x="42" y="490">
-      <params/>
-      <attribs>
-         <combo attributeName="pad" selection="PB0"/>
-         <combo attributeName="mode" selection="pullup"/>
-      </attribs>
+   <obj type="mix/mix 4 g" uuid="36f472cd81da2e17bd4b4ee11b53b4c82527220c" name="mix_3" x="1176" y="406">
+      <params>
+         <frac32.u.map name="gain1" value="34.5"/>
+         <frac32.u.map name="gain2" value="64.0"/>
+         <frac32.u.map name="gain3" value="32.0"/>
+         <frac32.u.map name="gain4" value="32.0"/>
+      </params>
+      <attribs/>
    </obj>
-   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_1" x="168" y="490">
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1288" y="406">
       <params/>
       <attribs/>
    </obj>
-   <obj type="gpio/out/led2" uuid="3d7a4c75d1f9901181a17ba5de752782de911803" name="led2_1" x="294" y="504">
+   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_1" x="350" y="462">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
+         <sDescription>rms meter</sDescription>
+         <author>Smashed Transistors</author>
+         <license>LGPL</license>
+         <helpPatch>rms meter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in"/>
+         </inlets>
+         <outlets>
+            <frac32 name="rms"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[
+int32_t ms; //mean square
+float rms;
+]]></code.declaration>
+         <code.init><![CDATA[
+ms = 0;
+rms = 0;
+]]></code.init>
+         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
+rms = sqrtf(arm::q_to_float(ms, 27));
+uint32_t coef;
+MTOFEXTENDED(0, coef);
+coef >>= 3;]]></code.krate>
+         <code.srate><![CDATA[
+ ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
+]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_1" x="420" y="462">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
+         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="in" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
+         <code.init><![CDATA[val = 0;]]></code.init>
+         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<27),val);
+      else val = ___SMMLA(val-inlet_in,(-1<<27)+(62<<21),val);
+   outlet_out = val;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_3" x="868" y="504">
       <params/>
       <attribs/>
    </obj>
-   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_2" x="42" y="602">
+   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_2" x="350" y="532">
       <params/>
-      <attribs>
-         <combo attributeName="pad" selection="PB1"/>
-         <combo attributeName="mode" selection="pullup"/>
-      </attribs>
-   </obj>
-   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_2" x="154" y="602">
+      <attribs/>
+      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
+         <sDescription>rms meter</sDescription>
+         <author>Smashed Transistors</author>
+         <license>LGPL</license>
+         <helpPatch>rms meter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in"/>
+         </inlets>
+         <outlets>
+            <frac32 name="rms"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[
+int32_t ms; //mean square
+float rms;
+]]></code.declaration>
+         <code.init><![CDATA[
+ms = 0;
+rms = 0;
+]]></code.init>
+         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
+rms = sqrtf(arm::q_to_float(ms, 27));
+uint32_t coef;
+MTOFEXTENDED(0, coef);
+coef >>= 3;]]></code.krate>
+         <code.srate><![CDATA[
+ ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
+]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_2" x="420" y="532">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
+         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="in" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
+         <code.init><![CDATA[val = 0;]]></code.init>
+         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
+      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
+   outlet_out = val;]]></code.krate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_3" x="350" y="602">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
+         <sDescription>rms meter</sDescription>
+         <author>Smashed Transistors</author>
+         <license>LGPL</license>
+         <helpPatch>rms meter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in"/>
+         </inlets>
+         <outlets>
+            <frac32 name="rms"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[
+int32_t ms; //mean square
+float rms;
+]]></code.declaration>
+         <code.init><![CDATA[
+ms = 0;
+rms = 0;
+]]></code.init>
+         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
+rms = sqrtf(arm::q_to_float(ms, 27));
+uint32_t coef;
+MTOFEXTENDED(0, coef);
+coef >>= 3;]]></code.krate>
+         <code.srate><![CDATA[
+ ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
+]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_3" x="420" y="602">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
+         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="in" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
+         <code.init><![CDATA[val = 0;]]></code.init>
+         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
+      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
+   outlet_out = val;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_4" x="868" y="630">
       <params/>
       <attribs/>
    </obj>
-   <obj type="gpio/out/led1" uuid="c6679540460d64e2e71760e61cb82fac227e2764" name="led1_1" x="266" y="602">
+   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_4" x="350" y="672">
       <params/>
       <attribs/>
-   </obj>
+      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
+         <sDescription>rms meter</sDescription>
+         <author>Smashed Transistors</author>
+         <license>LGPL</license>
+         <helpPatch>rms meter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in"/>
+         </inlets>
+         <outlets>
+            <frac32 name="rms"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[
+int32_t ms; //mean square
+float rms;
+]]></code.declaration>
+         <code.init><![CDATA[
+ms = 0;
+rms = 0;
+]]></code.init>
+         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
+rms = sqrtf(arm::q_to_float(ms, 27));
+uint32_t coef;
+MTOFEXTENDED(0, coef);
+coef >>= 3;]]></code.krate>
+         <code.srate><![CDATA[
+ ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
+]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_4" x="420" y="672">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
+         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="in" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
+         <code.init><![CDATA[val = 0;]]></code.init>
+         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
+      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
+   outlet_out = val;]]></code.krate>
+      </object>
+   </patchobj>
    <nets>
       <net>
          <source obj="kticks2sec_1" outlet="samplesTotal"/>
@@ -314,6 +1048,7 @@ disp_d2 = outlet_tap1;]]></code.krate>
       <net>
          <source obj="echo_1" outlet="out4"/>
          <dest obj="mix_1" inlet="in2"/>
+         <dest obj="mix_2" inlet="in5"/>
       </net>
       <net>
          <source obj="lp1_1" outlet="out"/>
@@ -321,8 +1056,172 @@ disp_d2 = outlet_tap1;]]></code.krate>
       </net>
       <net>
          <source obj="mix_2" outlet="out"/>
-         <dest obj="mix_3" inlet="in1"/>
          <dest obj="lp1_1" inlet="in"/>
+         <dest obj="mix_3" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="smooth2_1" outlet="out"/>
+         <dest obj="midihandler" inlet="level1"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out0"/>
+         <dest obj="rms_1" inlet="in"/>
+         <dest obj="trisfreq_1" inlet="audioin"/>
+      </net>
+      <net>
+         <source obj="rms_1" outlet="rms"/>
+         <dest obj="smooth2_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_2" outlet="rms"/>
+         <dest obj="smooth2_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_3" outlet="rms"/>
+         <dest obj="smooth2_3" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_4" outlet="rms"/>
+         <dest obj="smooth2_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out1"/>
+         <dest obj="rms_2" inlet="in"/>
+         <dest obj="trisfreq_2" inlet="audioin"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out2"/>
+         <dest obj="rms_3" inlet="in"/>
+         <dest obj="trisfreq_3" inlet="audioin"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out3"/>
+         <dest obj="rms_4" inlet="in"/>
+         <dest obj="trisfreq_4" inlet="audioin"/>
+      </net>
+      <net>
+         <source obj="smooth2_2" outlet="out"/>
+         <dest obj="midihandler" inlet="level2"/>
+      </net>
+      <net>
+         <source obj="smooth2_3" outlet="out"/>
+         <dest obj="midihandler" inlet="level3"/>
+      </net>
+      <net>
+         <source obj="smooth2_4" outlet="out"/>
+         <dest obj="midihandler" inlet="level4"/>
+      </net>
+      <net>
+         <source obj="trisfreq_1" outlet="outlet_1"/>
+         <dest obj="mix_2" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="pitch1"/>
+         <dest obj="trisfreq_1" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="pitch2"/>
+         <dest obj="trisfreq_2" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="trisfreq_2" outlet="outlet_1"/>
+         <dest obj="mix_2" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="trisfreq_3" outlet="outlet_1"/>
+         <dest obj="mix_2" inlet="in3"/>
+      </net>
+      <net>
+         <source obj="trisfreq_4" outlet="outlet_1"/>
+         <dest obj="mix_2" inlet="in4"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="combfdbk1"/>
+         <dest obj="trisfreq_1" inlet="comb_feedback"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="comblevel1"/>
+         <dest obj="trisfreq_1" inlet="comb_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="vcflevel1"/>
+         <dest obj="trisfreq_1" inlet="wah_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="combfdbk2"/>
+         <dest obj="trisfreq_2" inlet="comb_feedback"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="comblevel2"/>
+         <dest obj="trisfreq_2" inlet="comb_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="ringlevel2"/>
+         <dest obj="trisfreq_2" inlet="ring_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="vcflevel2"/>
+         <dest obj="trisfreq_2" inlet="wah_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="pitch3"/>
+         <dest obj="trisfreq_3" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="combfdbk3"/>
+         <dest obj="trisfreq_3" inlet="comb_feedback"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="comblevel3"/>
+         <dest obj="trisfreq_3" inlet="comb_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="ringlevel3"/>
+         <dest obj="trisfreq_3" inlet="ring_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="vcflevel3"/>
+         <dest obj="trisfreq_3" inlet="wah_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="pitch4"/>
+         <dest obj="trisfreq_4" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="combfdbk4"/>
+         <dest obj="trisfreq_4" inlet="comb_feedback"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="comblevel4"/>
+         <dest obj="trisfreq_4" inlet="comb_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="ringlevel4"/>
+         <dest obj="trisfreq_4" inlet="ring_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="vcflevel4"/>
+         <dest obj="trisfreq_4" inlet="wah_gain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="level1"/>
+         <dest obj="trisfreq_1" inlet="outgain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="level2"/>
+         <dest obj="trisfreq_2" inlet="outgain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="level3"/>
+         <dest obj="trisfreq_3" inlet="outgain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="level4"/>
+         <dest obj="trisfreq_4" inlet="outgain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="ringlevel1"/>
+         <dest obj="trisfreq_1" inlet="ring_gain"/>
       </net>
    </nets>
    <settings>
@@ -336,9 +1235,9 @@ disp_d2 = outlet_tap1;]]></code.krate>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>126</x>
-      <y>35</y>
-      <width>1314</width>
+      <x>0</x>
+      <y>30</y>
+      <width>1426</width>
       <height>877</height>
    </windowPos>
 </patch-1.0>

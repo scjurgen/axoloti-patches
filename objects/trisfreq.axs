@@ -68,11 +68,7 @@ if (dpos >= currentWidth)
 outlet_out = din;]]></code.srate>
       </object>
    </patchobj>
-   <obj type="patch/inlet a" uuid="b577fe41e0a6bc7b5502ce33cb8a3129e2e28ee5" name="inlet_1" x="14" y="28">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="dist/soft" uuid="e680d76a805e4866027cdf654c7efd8b2e54622" name="soft_1" x="448" y="112">
+   <obj type="patch/inlet a" uuid="b577fe41e0a6bc7b5502ce33cb8a3129e2e28ee5" name="audioin" x="14" y="28">
       <params/>
       <attribs/>
    </obj>
@@ -134,7 +130,7 @@ outlet_wave= (r>>4);]]></code.srate>
       <params/>
       <attribs/>
       <object id="patch/object" uuid="95feb278-e44e-4a2e-b0d2-1ecd0baa6629">
-         <sDescription>3 input s-rate mixer, shows gain units</sDescription>
+         <sDescription></sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
          <inlets>
@@ -153,13 +149,29 @@ outlet_wave= (r>>4);]]></code.srate>
          <params/>
          <attribs/>
          <includes/>
+         <code.declaration><![CDATA[int32_t lastGain[3];]]></code.declaration>
+         <code.krate><![CDATA[if (inlet_gain1 != lastGain[0])
+{
+	lastGain[0] = inlet_gain1;
+	LogTextMessage("new comb gain: %f", q27_to_float(inlet_gain1));
+}
+if (inlet_gain2 != lastGain[1])
+{
+	lastGain[1] = inlet_gain2;
+	LogTextMessage("new ring gain: %f", q27_to_float(inlet_gain2));
+}
+if (inlet_gain3 != lastGain[2])
+{
+	lastGain[2] = inlet_gain3;
+	LogTextMessage("new wah gain: %f", q27_to_float(inlet_gain3));
+}]]></code.krate>
          <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,inlet_gain1 << 4);
    accum = ___SMMLA(inlet_in2,inlet_gain2 << 4,accum);
    accum = ___SMMLA(inlet_in3,inlet_gain3 << 4,accum);
    outlet_out=  __SSAT(inlet_bus__in + (accum<<1),28);]]></code.srate>
       </object>
    </patchobj>
-   <obj type="patch/outlet a" uuid="abd8c5fd3b0524a6630f65cad6dc27f6c58e2a3e" name="outlet_1" x="686" y="238">
+   <obj type="patch/outlet a" uuid="abd8c5fd3b0524a6630f65cad6dc27f6c58e2a3e" name="outlet_1" x="756" y="308">
       <params/>
       <attribs/>
    </obj>
@@ -173,6 +185,27 @@ outlet_wave= (r>>4);]]></code.srate>
       </params>
       <attribs/>
    </obj>
+   <patchobj type="patch/object" uuid="72e0f995-fb6d-4dab-9f1f-15ef742292a4" name="gain_1" x="672" y="364">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="72e0f995-fb6d-4dab-9f1f-15ef742292a4">
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="input"/>
+            <frac32 name="gain"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.srate><![CDATA[outlet_out= __SSAT(___SMMUL(inlet_gain,__SSAT(inlet_in,28)<<4)<<1,28);]]></code.srate>
+      </object>
+   </patchobj>
    <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="ring_gain" x="14" y="406">
       <params/>
       <attribs/>
@@ -181,9 +214,13 @@ outlet_wave= (r>>4);]]></code.srate>
       <params/>
       <attribs/>
    </obj>
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="outgain" x="14" y="490">
+      <params/>
+      <attribs/>
+   </obj>
    <nets>
       <net>
-         <source obj="inlet_1" outlet="inlet"/>
+         <source obj="audioin" outlet="inlet"/>
          <dest obj="obj_1" inlet="in"/>
          <dest obj="RingMod_1" inlet="a"/>
          <dest obj="fdbkcomb_2" inlet="in"/>
@@ -191,10 +228,6 @@ outlet_wave= (r>>4);]]></code.srate>
       <net>
          <source obj="sine_1" outlet="wave"/>
          <dest obj="RingMod_1" inlet="b"/>
-      </net>
-      <net>
-         <source obj="mix_1" outlet="out"/>
-         <dest obj="outlet_1" inlet="outlet"/>
       </net>
       <net>
          <source obj="pitch" outlet="inlet"/>
@@ -233,11 +266,18 @@ outlet_wave= (r>>4);]]></code.srate>
       <net>
          <source obj="fdbkcomb_2" outlet="out"/>
          <dest obj="mix_1" inlet="in1"/>
-         <dest obj="soft_1" inlet="in"/>
       </net>
       <net>
-         <source obj="soft_1" outlet="out"/>
-         <dest obj="mix_1" inlet="bus_in"/>
+         <source obj="gain_1" outlet="out"/>
+         <dest obj="outlet_1" inlet="outlet"/>
+      </net>
+      <net>
+         <source obj="mix_1" outlet="out"/>
+         <dest obj="gain_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="outgain" outlet="inlet"/>
+         <dest obj="gain_1" inlet="gain"/>
       </net>
    </nets>
    <settings>
@@ -245,8 +285,8 @@ outlet_wave= (r>>4);]]></code.srate>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>331</x>
-      <y>72</y>
+      <x>159</x>
+      <y>90</y>
       <width>1109</width>
       <height>766</height>
    </windowPos>

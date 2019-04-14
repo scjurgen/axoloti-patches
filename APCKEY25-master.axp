@@ -1,39 +1,54 @@
 <patch-1.0 appVersion="1.0.12">
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_1" x="280" y="42">
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_1" x="504" y="0">
       <params>
          <frac32.u.map name="risetime" value="0.0"/>
-         <frac32.u.map name="falltime" value="52.5"/>
+         <frac32.u.map name="falltime" value="62.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="rand/pink" uuid="d51c4125e968e7c5fb2d54b71478ac2a3d73e935" name="pink_1" x="28" y="84">
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="28" y="28">
       <params/>
       <attribs/>
    </obj>
-   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_1" x="140" y="112">
+   <obj type="audio/inconfig" uuid="9a80ef3c19f2a8f81da3a3b7c1c44d18126b97d9" name="inconfig_1" x="126" y="28">
       <params/>
-      <attribs/>
+      <attribs>
+         <combo attributeName="gain" selection="-3dB"/>
+         <combo attributeName="boost" selection="20dB"/>
+         <combo attributeName="mode" selection="Mono(L)"/>
+      </attribs>
    </obj>
-   <obj type="rand/pink" uuid="d51c4125e968e7c5fb2d54b71478ac2a3d73e935" name="pink_2" x="28" y="126">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_2" x="140" y="154">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_2" x="280" y="154">
+   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="224" y="42">
       <params>
-         <frac32.u.map name="risetime" value="0.0"/>
-         <frac32.u.map name="falltime" value="59.0"/>
+         <frac32.u.map name="gain1" value="64.0"/>
+         <frac32.u.map name="gain2" value="54.5"/>
+         <frac32.u.map name="gain3" value="0.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="rand/pink" uuid="d51c4125e968e7c5fb2d54b71478ac2a3d73e935" name="pink_3" x="28" y="168">
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="728" y="42">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-6dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_1" x="364" y="70">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="462" y="182">
+   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_2" x="364" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_2" x="504" y="112">
+      <params>
+         <frac32.u.map name="risetime" value="0.0"/>
+         <frac32.u.map name="falltime" value="62.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="686" y="140">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9">
@@ -185,8 +200,8 @@ void setSmallNumber(int8_t x, int value, int8_t color=1) {
 
 void updateLevel(int channel, int32_t level)
 {
-	level >>= 23;
-	// LogTextMessage("%d", level);
+	level >>= 21;
+	LogTextMessage("%d", level);
 
 	auto idx = channel*2+1;
 	newMatrix[0][idx] = level>2?1:0;
@@ -291,26 +306,35 @@ if (status == (MIDI_NOTE_ON | 1))
 {
 	LogTextMessage("note on %d", data1);
 }
-if (status == MIDI_NOTE_ON)
+if (status == (MIDI_NOTE_OFF | 1))
 {
+	LogTextMessage("note off %d", data1);
+}
+if ((status == MIDI_NOTE_ON) || (status == MIDI_NOTE_OFF))
+{
+	char *onOff;
+	if (status == MIDI_NOTE_ON)
+		onOff = "on";
+	else
+		onOff = "off";
 	if (data1 < 55)
 	{
-		LogTextMessage("matrix button %d", data1);
+		LogTextMessage("matrix button %d %s", data1, onOff);
 	}else if (data1 >= 64 && data1 <= 71)
 	{
-		LogTextMessage("channel button %d", data1-64);
+		LogTextMessage("channel button %d %s", data1-64, onOff);
 	}else
 	switch(data1)
 	{
-		case 81: LogTextMessage("stop all"); break;
-		case 82: LogTextMessage("scene clip stop"); break;
-		case 83: LogTextMessage("scene solo"); break;
-		case 84: LogTextMessage("scene rec arm"); break;
-		case 85: LogTextMessage("scene mute"); break;
-		case 86: LogTextMessage("scene select"); break;
-		case 91: LogTextMessage("play/pause"); break;
-		case 93: LogTextMessage("record"); break;
-		case 98: LogTextMessage("shift"); break;
+		case 81: LogTextMessage("stop all %s", onOff); break;
+		case 82: LogTextMessage("scene clip stop %s", onOff); break;
+		case 83: LogTextMessage("scene solo %s", onOff); break;
+		case 84: LogTextMessage("scene rec arm %s", onOff); break;
+		case 85: LogTextMessage("scene mute %s", onOff); break;
+		case 86: LogTextMessage("scene select %s", onOff); break;
+		case 91: LogTextMessage("play/pause %s", onOff); break;
+		case 93: LogTextMessage("record %s", onOff); break;
+		case 98: LogTextMessage("shift %s", onOff); break;
 	}
 }
 
@@ -327,34 +351,207 @@ if (status == MIDI_CONTROL_CHANGE)
 {
 	if ((data1>=48 && data1<=55))
 	{
-		MidiSend3(MIDI_DEVICE_USB_HOST, 1, MIDI_NOTE_ON, data1-48, data2*7/128); 
+		LogTextMessage("Pot %d: %d", data1-47, data2);
 	}
 }]]></code.midihandler>
       </object>
    </patchobj>
-   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_3" x="140" y="196">
+   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_3" x="364" y="154">
       <params/>
       <attribs/>
    </obj>
-   <obj type="rand/pink" uuid="d51c4125e968e7c5fb2d54b71478ac2a3d73e935" name="pink_4" x="28" y="210">
+   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_4" x="364" y="196">
       <params/>
       <attribs/>
    </obj>
-   <obj type="math/abs" uuid="4ae01ff03753539d9028888689654235fa199936" name="abs_4" x="140" y="238">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_3" x="280" y="266">
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_3" x="504" y="224">
       <params>
          <frac32.u.map name="risetime" value="0.0"/>
          <frac32.u.map name="falltime" value="60.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_4" x="280" y="378">
+   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="154" y="294">
+      <params/>
+      <attribs>
+         <spinner attributeName="maxDelayInSeconds" value="20"/>
+      </attribs>
+      <object id="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6">
+         <sDescription>Multitap delay output for sequence style effects</sDescription>
+         <author>Juergen Schwietering</author>
+         <license>BSD</license>
+         <helpPatch>delay.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="input"/>
+            <int32 name="delayTimeInSamples"/>
+            <int32 name="tap1InSamples"/>
+            <int32 name="tap2InSamples"/>
+            <int32 name="tap3InSamples"/>
+            <int32 name="tap4InSamples"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out0" description="direct output"/>
+            <frac32buffer name="out1"/>
+            <frac32buffer name="out2"/>
+            <frac32buffer name="out3"/>
+            <frac32buffer name="out4" description="final"/>
+         </outlets>
+         <displays>
+            <int32.label name="d1"/>
+         </displays>
+         <params/>
+         <attribs>
+            <spinner name="maxDelayInSeconds" MinValue="1" MaxValue="60" DefaultValue="20"/>
+         </attribs>
+         <includes/>
+         <code.declaration><![CDATA[uint32_t head;
+int16_t *delayline;
+int32_t tapsInSamples[4];]]></code.declaration>
+         <code.init><![CDATA[static int16_t _delay[attr_maxDelayInSeconds*48000] __attribute__ ((section (".sdram")));
+delayline = &_delay[0];
+
+for (auto i=0; i < sizeof(_delay); ++i)
+{
+   delayline[i] = 0;
+}
+head = 0;]]></code.init>
+         <code.krate><![CDATA[int32_t _totalTapDelay = inlet_delayTimeInSamples;
+
+disp_d1 = _totalTapDelay;
+tapsInSamples[0] = inlet_tap1InSamples;
+tapsInSamples[1] = inlet_tap2InSamples;
+tapsInSamples[2] = inlet_tap3InSamples;
+tapsInSamples[3] = inlet_tap4InSamples;]]></code.krate>
+         <code.srate><![CDATA[int32_t vals[4];
+
+outlet_out4 = delayline[head] << 16;
+
+delayline[head] = inlet_in >> 16;
+
+for (auto i=0; i < 4; ++i)
+{
+       int32_t rdPos = head-tapsInSamples[i];
+       if (rdPos < 0)
+               rdPos += _totalTapDelay;
+       vals[i] = delayline[rdPos]<<16;
+}
+head++;
+if (head >= _totalTapDelay)  
+       head = 0;
+
+outlet_out0 = vals[0];
+outlet_out1 = vals[1];
+outlet_out2 = vals[2];
+outlet_out3 = vals[3];]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="tiar/env/rms meter" uuid="19a127f7-a7de-4c03-ad05-137f17497344" name="rms_1" x="350" y="294">
+      <params>
+         <frac32.s.map name="pitch" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="42" y="308">
+      <params>
+         <int32 name="bpm" value="91"/>
+         <int32 name="div" value="2"/>
+         <int32 name="total" value="8"/>
+         <int32 name="tap1" value="1"/>
+         <int32 name="tap2" value="3"/>
+         <int32 name="tap3" value="5"/>
+         <int32 name="tap4" value="7"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753">
+         <sDescription>BPM to samples</sDescription>
+         <author>JS</author>
+         <license>GPL</license>
+         <inlets>
+            <frac32 name="BPM"/>
+         </inlets>
+         <outlets>
+            <int32 name="samplesTotal"/>
+            <int32 name="tap1"/>
+            <int32 name="tap2"/>
+            <int32 name="tap3"/>
+            <int32 name="tap4"/>
+         </outlets>
+         <displays>
+            <int32.label name="d1"/>
+            <int32.label name="d2"/>
+         </displays>
+         <params>
+            <int32 name="bpm">
+               <MinValue i="40"/>
+               <MaxValue i="240"/>
+            </int32>
+            <int32 name="div">
+               <MinValue i="1"/>
+               <MaxValue i="24"/>
+            </int32>
+            <int32 name="total">
+               <MinValue i="3"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap1">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap2">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap3">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap4">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[outlet_samplesTotal =  60*param_total*48000/param_bpm/param_div;
+outlet_tap1 =  60*param_tap1*48000/param_bpm/param_div;
+outlet_tap2 =  60*param_tap2*48000/param_bpm/param_div;
+outlet_tap3 =  60*param_tap3*48000/param_bpm/param_div;
+outlet_tap4 =  60*param_tap4*48000/param_bpm/param_div;
+
+disp_d1 = outlet_samplesTotal;
+disp_d2 = outlet_tap1;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_4" x="504" y="336">
       <params>
          <frac32.u.map name="risetime" value="0.0"/>
          <frac32.u.map name="falltime" value="61.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="742" y="364">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="tiar/env/rms meter" uuid="19a127f7-a7de-4c03-ad05-137f17497344" name="rms_2" x="350" y="392">
+      <params>
+         <frac32.s.map name="pitch" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="tiar/env/rms meter" uuid="19a127f7-a7de-4c03-ad05-137f17497344" name="rms_3" x="350" y="490">
+      <params>
+         <frac32.s.map name="pitch" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="disp/dial b" uuid="9ffed04e6a3052d9001eda83bae7024cb6d17037" name="dial_1" x="532" y="490">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="tiar/env/rms meter" uuid="19a127f7-a7de-4c03-ad05-137f17497344" name="rms_4" x="350" y="574">
+      <params>
+         <frac32.s.map name="pitch" value="0.0"/>
       </params>
       <attribs/>
    </obj>
@@ -362,22 +559,6 @@ if (status == MIDI_CONTROL_CHANGE)
       <net>
          <source obj="abs_1" outlet="out"/>
          <dest obj="smooth2_1" inlet="in"/>
-      </net>
-      <net>
-         <source obj="pink_1" outlet="out"/>
-         <dest obj="abs_1" inlet="in"/>
-      </net>
-      <net>
-         <source obj="pink_2" outlet="out"/>
-         <dest obj="abs_2" inlet="in"/>
-      </net>
-      <net>
-         <source obj="pink_3" outlet="out"/>
-         <dest obj="abs_3" inlet="in"/>
-      </net>
-      <net>
-         <source obj="pink_4" outlet="out"/>
-         <dest obj="abs_4" inlet="in"/>
       </net>
       <net>
          <source obj="abs_2" outlet="out"/>
@@ -406,6 +587,73 @@ if (status == MIDI_CONTROL_CHANGE)
       <net>
          <source obj="abs_4" outlet="out"/>
          <dest obj="smooth2_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="kticks2sec_1" outlet="samplesTotal"/>
+         <dest obj="echo_1" inlet="delayTimeInSamples"/>
+      </net>
+      <net>
+         <source obj="kticks2sec_1" outlet="tap1"/>
+         <dest obj="echo_1" inlet="tap1InSamples"/>
+      </net>
+      <net>
+         <source obj="kticks2sec_1" outlet="tap2"/>
+         <dest obj="echo_1" inlet="tap2InSamples"/>
+      </net>
+      <net>
+         <source obj="kticks2sec_1" outlet="tap3"/>
+         <dest obj="echo_1" inlet="tap3InSamples"/>
+      </net>
+      <net>
+         <source obj="kticks2sec_1" outlet="tap4"/>
+         <dest obj="echo_1" inlet="tap4InSamples"/>
+      </net>
+      <net>
+         <source obj="mix_1" outlet="out"/>
+         <dest obj="echo_1" inlet="in"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out4"/>
+         <dest obj="mix_1" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="in_1" outlet="wave"/>
+         <dest obj="mix_1" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out0"/>
+         <dest obj="rms_1" inlet="in"/>
+         <dest obj="out_1" inlet="left"/>
+      </net>
+      <net>
+         <source obj="rms_1" outlet="rms"/>
+         <dest obj="abs_1" inlet="in"/>
+         <dest obj="dial_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out1"/>
+         <dest obj="rms_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_2" outlet="rms"/>
+         <dest obj="abs_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out2"/>
+         <dest obj="rms_3" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_3" outlet="rms"/>
+         <dest obj="abs_3" inlet="in"/>
+      </net>
+      <net>
+         <source obj="rms_4" outlet="rms"/>
+         <dest obj="abs_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out3"/>
+         <dest obj="rms_4" inlet="in"/>
       </net>
    </nets>
    <settings>
