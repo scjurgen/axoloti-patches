@@ -44,10 +44,145 @@
       <params/>
       <attribs/>
    </obj>
-   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="392" y="98">
+   <patchobj type="patch/object" uuid="dca7770f-da39-4d9f-8518-4286ca9faaf1" name="saveload_1" x="602" y="70">
+      <params/>
+      <attribs>
+         <objref attributeName="table" obj=""/>
+         <table attributeName="prefix" table=""/>
+         <table attributeName="suffix" table=""/>
+      </attribs>
+      <object id="patch/object" uuid="dca7770f-da39-4d9f-8518-4286ca9faaf1">
+         <sDescription>Load from table and save to table, Uses same location for both save and load. Use save inlet to save to sd-card.</sDescription>
+         <author>Jaffasplaffa</author>
+         <license>BSD</license>
+         <inlets>
+            <int32 name="index" description="Select which destination to save to and load from."/>
+            <bool32.rising name="save" description="Use a button to trigger save function."/>
+         </inlets>
+         <outlets/>
+         <displays/>
+         <params/>
+         <attribs>
+            <objref name="table"/>
+            <table name="prefix"/>
+            <table name="suffix"/>
+         </attribs>
+         <includes>
+            <include>chibios/ext/fatfs/src/ff.h</include>
+         </includes>
+         <depends>
+            <depend>fatfs</depend>
+         </depends>
+         <code.declaration><![CDATA[// Trigger load/save //
+int ntrig;
+int ntrigLOAD;
+
+// String/index //
+char c[64];
+int offset;
+int pval;
+
+
+// Logic/change //
+   int ptrig;
+   int32_t pvalLC;
+   int32_t LOGICCHANGE;]]></code.declaration>
+         <code.init><![CDATA[// Trigger load/save //
+ntrig = 0;
+ntrigLOAD = 0;
+
+// String/index //
+strcpy(&c[0],"attr_prefix000attr_suffix");
+offset = strlen("attr_prefix");
+pval = 0;
+
+// Logic/change //
+ptrig = 0;
+pvalLC = 0;]]></code.init>
+         <code.krate><![CDATA[// String index //
+if (inlet_index != pval){   pval = inlet_index;
+   int i = inlet_index;   int i0 = i/10;
+   c[offset+2] = '0'+i-10*i0;
+   i = i0; i0 = i/10;
+   c[offset+1] = '0'+i-10*i0;
+   i = i0; i0 = i/10;
+   c[offset+0] = '0'+i-10*i0;
+}
+
+// Logic/chnage //
+if ((pvalLC != inlet_index)&(!ptrig)) { 
+  LOGICCHANGE = 1;
+  pvalLC = inlet_index;
+  ptrig = 1;
+} else {
+  ptrig = 0;
+  LOGICCHANGE = 0;
+}
+
+// Table/save //
+if ((inlet_save>0) && !ntrig) {
+    char* filename = &c[0]; // filename internally //
+    ntrig=1;
+    FIL FileObject;
+    FRESULT err;
+    UINT bytes_written;
+    codec_clearbuffer();
+    err = f_open(&FileObject, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    if (err != FR_OK) {report_fatfs_error(err,filename); return;}
+    int rem_sz = sizeof(*attr_table.array)*attr_table.LENGTH;
+    int offset = 0;
+    while (rem_sz>0) {
+      if (rem_sz>sizeof(fbuff)) {
+        memcpy((char *)fbuff,(char *)(&attr_table.array[0]) + offset, sizeof(fbuff));
+        err = f_write(&FileObject, fbuff, sizeof(fbuff),&bytes_written);
+        rem_sz -= sizeof(fbuff);
+        offset += sizeof(fbuff);
+      } else {
+        memcpy((char *)fbuff,(char *)(&attr_table.array[0]) + offset, rem_sz);
+        err = f_write(&FileObject, fbuff, rem_sz, &bytes_written);
+        rem_sz = 0;
+      }
+    }    if (err != FR_OK) report_fatfs_error(err,filename);
+    err = f_close(&FileObject);
+    if (err != FR_OK) report_fatfs_error(err,filename);
+  }
+  else if (!(inlet_save>0)) ntrig=0;
+
+// Table/load //
+if ((LOGICCHANGE>0) && !ntrigLOAD) {
+    char* filename = &c[0]; // filename internally //
+    ntrigLOAD=1;
+    FIL FileObject;
+    FRESULT err;
+    UINT bytes_read;
+    codec_clearbuffer();
+    err = f_open(&FileObject, filename, FA_READ | FA_OPEN_EXISTING);
+    if (err != FR_OK) { report_fatfs_error(err,filename); return;}
+    int rem_sz = sizeof(*attr_table.array)*attr_table.LENGTH;
+    int offset = 0;
+    while (rem_sz>0) {
+      if (rem_sz>sizeof(fbuff)) {
+        err = f_read(&FileObject, fbuff, sizeof(fbuff),&bytes_read);
+        if (bytes_read == 0) break;
+        memcpy((char *)(&attr_table.array[0]) + offset,(char *)fbuff,bytes_read);
+        rem_sz -= bytes_read;
+        offset += bytes_read;
+      } else {
+        err = f_read(&FileObject, fbuff, rem_sz,&bytes_read);
+        memcpy((char *)(&attr_table.array[0]) + offset,(char *)fbuff,bytes_read);
+        rem_sz = 0;
+      }
+    }    if (err != FR_OK) { report_fatfs_error(err,filename); return;};
+    err = f_close(&FileObject);
+    if (err != FR_OK) { report_fatfs_error(err,filename); return;};
+}
+else if (!(LOGICCHANGE>0)) ntrigLOAD=0;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="476" y="98">
       <params>
          <frac32.u.map name="gain1" value="64.0"/>
-         <frac32.u.map name="gain2" value="20.0"/>
+         <frac32.u.map name="gain2" value="0.0"/>
          <frac32.u.map name="gain3" value="0.0"/>
       </params>
       <attribs/>
@@ -81,17 +216,47 @@ else
 	outlet_out = 0;]]></code.srate>
       </object>
    </patchobj>
-   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="574" y="112">
-      <params>
-         <frac32.s.map name="freq" value="12.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_1" x="868" y="252">
+   <obj type="trisfreq" uuid="6b232d5e-876a-40b8-8e23-ac63c2c6f1c9" name="trisfreq_1" x="868" y="126">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="350" y="294">
+   <patchobj type="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826" name="mix_3" x="1148" y="140">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826">
+         <sDescription>2 input s-rate mixer, shows gain units</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="in1" description="input 1"/>
+            <frac32buffer name="in2" description="input 2"/>
+            <frac32 name="mix" description="mix value "/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="mix out"/>
+         </outlets>
+         <displays>
+            <int32.label name="mix"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[disp_mix = inlet_mix;]]></code.krate>
+         <code.srate><![CDATA[outlet_out = (___SMMUL(inlet_in2<<2, inlet_mix<<3)) +
+(___SMMUL(inlet_in1<<2, ((1<<27)-inlet_mix)<<3));]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="dial_1" x="756" y="210">
+      <params>
+         <frac32.u.map name="value" value="31.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="trisfreq" uuid="6b232d5e-876a-40b8-8e23-ac63c2c6f1c9" name="trisfreq_2" x="868" y="266">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="238" y="294">
       <params/>
       <attribs>
          <spinner attributeName="maxDelayInSeconds" value="20"/>
@@ -108,17 +273,16 @@ else
             <int32 name="tap2InSamples"/>
             <int32 name="tap3InSamples"/>
             <int32 name="tap4InSamples"/>
+            <bool32 name="samplehold"/>
          </inlets>
          <outlets>
-            <frac32buffer name="out0" description="direct output"/>
-            <frac32buffer name="out1"/>
-            <frac32buffer name="out2"/>
-            <frac32buffer name="out3"/>
-            <frac32buffer name="out4" description="final"/>
+            <frac32buffer name="tap0" description="direct output"/>
+            <frac32buffer name="tap1"/>
+            <frac32buffer name="tap2"/>
+            <frac32buffer name="tap3"/>
+            <frac32buffer name="loopend" description="final"/>
          </outlets>
-         <displays>
-            <int32.label name="d1"/>
-         </displays>
+         <displays/>
          <params/>
          <attribs>
             <spinner name="maxDelayInSeconds" MinValue="1" MaxValue="60" DefaultValue="20"/>
@@ -137,116 +301,50 @@ for (auto i=0; i < sizeof(_delay); ++i)
 head = 0;]]></code.init>
          <code.krate><![CDATA[int32_t _totalTapDelay = inlet_delayTimeInSamples;
 
-disp_d1 = _totalTapDelay;
 tapsInSamples[0] = inlet_tap1InSamples;
 tapsInSamples[1] = inlet_tap2InSamples;
 tapsInSamples[2] = inlet_tap3InSamples;
 tapsInSamples[3] = inlet_tap4InSamples;]]></code.krate>
          <code.srate><![CDATA[int32_t vals[4];
 
-outlet_out4 = delayline[head] << 16;
+#define BITRES 13
 
-delayline[head] = inlet_in >> 16;
+outlet_loopend = delayline[head] << BITRES;
+if (!inlet_samplehold)
+{
+	__SSAT(inlet_in, 28);
+	delayline[head] = inlet_in >> BITRES;
+}
 
 for (auto i=0; i < 4; ++i)
 {
        int32_t rdPos = head-tapsInSamples[i];
        if (rdPos < 0)
                rdPos += _totalTapDelay;
-       vals[i] = delayline[rdPos]<<16;
+       vals[i] = delayline[rdPos]<<BITRES;
 }
 head++;
 if (head >= _totalTapDelay)  
        head = 0;
 
-outlet_out0 = vals[0];
-outlet_out1 = vals[1];
-outlet_out2 = vals[2];
-outlet_out3 = vals[3];]]></code.srate>
+outlet_tap0 = vals[0];
+outlet_tap1 = vals[1];
+outlet_tap2 = vals[2];
+outlet_tap3 = vals[3];]]></code.srate>
       </object>
    </patchobj>
-   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="182" y="322">
-      <params>
-         <int32 name="bpm" value="98"/>
-         <int32 name="div" value="2"/>
-         <int32 name="total" value="12"/>
-         <int32 name="tap1" value="1"/>
-         <int32 name="tap2" value="4"/>
-         <int32 name="tap3" value="7"/>
-         <int32 name="tap4" value="10"/>
-      </params>
-      <attribs/>
-      <object id="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753">
-         <sDescription>BPM to samples</sDescription>
-         <author>JS</author>
-         <license>GPL</license>
-         <inlets>
-            <frac32 name="BPM"/>
-         </inlets>
-         <outlets>
-            <int32 name="samplesTotal"/>
-            <int32 name="tap1"/>
-            <int32 name="tap2"/>
-            <int32 name="tap3"/>
-            <int32 name="tap4"/>
-         </outlets>
-         <displays>
-            <int32.label name="d1"/>
-            <int32.label name="d2"/>
-         </displays>
-         <params>
-            <int32 name="bpm">
-               <MinValue i="40"/>
-               <MaxValue i="240"/>
-            </int32>
-            <int32 name="div">
-               <MinValue i="1"/>
-               <MaxValue i="24"/>
-            </int32>
-            <int32 name="total">
-               <MinValue i="3"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap1">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap2">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap3">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap4">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-         </params>
-         <attribs/>
-         <includes/>
-         <code.krate><![CDATA[outlet_samplesTotal =  60*param_total*48000/param_bpm/param_div;
-outlet_tap1 =  60*param_tap1*48000/param_bpm/param_div;
-outlet_tap2 =  60*param_tap2*48000/param_bpm/param_div;
-outlet_tap3 =  60*param_tap3*48000/param_bpm/param_div;
-outlet_tap4 =  60*param_tap4*48000/param_bpm/param_div;
-
-disp_d1 = outlet_samplesTotal;
-disp_d2 = outlet_tap1;]]></code.krate>
-      </object>
-   </patchobj>
-   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="602" y="322">
+   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="602" y="294">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9">
          <author>JS</author>
          <license>BSD</license>
          <inlets>
-            <frac32 name="level1"/>
-            <frac32 name="level2"/>
-            <frac32 name="level3"/>
-            <frac32 name="level4"/>
+            <int32 name="level1"/>
+            <int32 name="level2"/>
+            <int32 name="level3"/>
+            <int32 name="level4"/>
+            <int32 name="levelmain"/>
          </inlets>
          <outlets>
             <frac32 name="pitch1"/>
@@ -273,6 +371,7 @@ disp_d2 = outlet_tap1;]]></code.krate>
             <frac32 name="ringlevel4"/>
             <frac32 name="vcflevel4"/>
             <frac32 name="level4"/>
+            <frac32 name="mix"/>
          </outlets>
          <displays/>
          <params/>
@@ -287,11 +386,12 @@ int inQueue = 0;
 uint8_t midiQueue[1024]; // we need quite a lot because setting all APC key25 values are 53 values
 const int32_t gainValues[4] = {float_to_q27(0.0),float_to_q27(0.5),float_to_q27(0.75),float_to_q27(0.999)}; 
 const int32_t fdbkValues[4] = {float_to_q27(0.0),float_to_q27(0.9),float_to_q27(0.97),float_to_q27(0.99)}; 
-int32_t pitchValue[4] = {(-12)<<21,0<<21, 3 << 21, 11<<21};
+int32_t pitchValue[4] = {(-12)<<21,0<<21, 7 << 21, 12<<21};
 int32_t combGainValue[4] =  {float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0)};
 int32_t combFeedbackValue[4]={float_to_q27(0.9), float_to_q27(0.95), float_to_q27(0.9), float_to_q27(0.9)};
 int32_t ringGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9)};
 int32_t vcfGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9), float_to_q27(0.0)};
+int32_t vcfQValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9), float_to_q27(0.0)};
 int32_t outGain[4] = {float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999)};
 
 int8_t combGainSet[4] = {3,3,3,3};
@@ -307,7 +407,8 @@ const int cursorKeyIndex = 40;
 const int sceneKeyIndex = 48;
 const int cursorKeysNote = 64;
 const int sceneKeysNote = 82;
-int32_t lastLevel[4];
+int32_t lastLevel[5] = {0,0,0,0,0};
+int32_t mixLevel = float_to_q27(0.5);
 
 
 
@@ -334,12 +435,10 @@ void setStatus()
 	{
 		auto value = ledLevel(combGainValue[c]);
 		setMatrixChannelValue(c,0,value);
-		value = ledLevel(combFeedbackValue[c], float_to_q27(0.9), float_to_q27(0.97));
-		setMatrixChannelValue(c,1,value);
 		value = ledLevel(ringGainValue[c]);
-		setMatrixChannelValue(c,2,value);
+		setMatrixChannelValue(c,1,value);
 		value = ledLevel(vcfGainValue[c]);
-		setMatrixChannelValue(c,3,value);
+		setMatrixChannelValue(c,2,value);
 	}
 }
 
@@ -449,6 +548,7 @@ void setMatrixColumn(int x, int value, int8_t color) {
     value >>= 1;
   }
 }
+
 void setMatrixChannelValue(int c, int paramY, int8_t color) {
   if (c >= 4)
     return;
@@ -479,15 +579,19 @@ void setSmallNumber(int8_t x, int value, int8_t color=1) {
 
 void updateLevel(int channel, int32_t level)
 {
-	level >>= 23;
-	//LogTextMessage("%d", level);
+	int idx;
+	if (channel == 4)
+		idx = 0;
+	else
+		idx = channel*2+1;
 
-	auto idx = channel*2+1;
-	newMatrix[0][idx] = level>2?1:0;
-	newMatrix[1][idx] = level>3?1:0;
-	newMatrix[2][idx] = level>4?1:0;
-	newMatrix[3][idx] = level>5?5:0;
-	newMatrix[4][idx] = level>6?3:0;
+	if (level >-20)
+		newMatrix[4][idx] = 3;
+	else if (level > -30)
+		newMatrix[4][idx] = 5;
+	else	if (level > -50)
+		newMatrix[4][idx] = 1;
+	else	newMatrix[4][idx] = 0;
 }
 
 
@@ -501,19 +605,13 @@ void setTrisValue(int row, int channel)
 			combGainValue[channel] = gainValues[combGainSet[channel]];
 			LogTextMessage("Gain comb %d %d", channel, combGainValue[channel]);
 			break;
-		case 1:combFdbkSet[channel]++; 
-			if (combFdbkSet[channel] >=4)
-				combFdbkSet[channel] = 0;
-			combFeedbackValue[channel] = fdbkValues[combFdbkSet[channel]];
-			LogTextMessage("Fdbk comb %d %d", channel, combFeedbackValue[channel]);
-			break;
-		case 2:combRingSet[channel]++; 
+		case 1:combRingSet[channel]++; 
 			if (combRingSet[channel] >=4)
 				combRingSet[channel] = 0;
 			ringGainValue[channel] = gainValues[combRingSet[channel]];
 			LogTextMessage("Gain ring %d %d", channel, ringGainValue[channel]);
 			break;
-		case 3:combVcfSet[channel]++; 
+		case 2:combVcfSet[channel]++; 
 			if (combVcfSet[channel] >=4)
 				combVcfSet[channel] = 0;
 			vcfGainValue[channel] = gainValues[combVcfSet[channel]];
@@ -552,8 +650,23 @@ void SetVolumeLevel(int channel, int level)
 {
 	outGain[channel] = float_to_q27((float)level/128.0);
 	//LogTextMessage("%d", outGain[channel]);
+}
+
+void SetCombFeedBack(int level)
+{
+	for (int c=0; c < 4; ++c)
+	{
+		const float c_maxTime = 0.5f;
+		combFeedbackValue[c] = float_to_q27((level-64)/128.0f*c_maxTime);
+	}
+}
+
+void SetMix(int level)
+{
+     mixLevel = float_to_q27(level/128.0f);
 }]]></code.declaration>
-         <code.init><![CDATA[clearAll(0);
+         <code.init><![CDATA[SetCombFeedBack(65);
+clearAll(0);
 setStatus();]]></code.init>
          <code.krate><![CDATA[static int countUp=0;
 static int beat = 3000;
@@ -574,7 +687,7 @@ outlet_combfdbk4=combFeedbackValue[3];
 outlet_ringlevel1=ringGainValue[0];
 outlet_ringlevel2=ringGainValue[1];
 outlet_ringlevel3=ringGainValue[2];
-outlet_vcflevel4=ringGainValue[3];
+outlet_ringlevel4=ringGainValue[3];
 outlet_vcflevel1=vcfGainValue[0];
 outlet_vcflevel2=vcfGainValue[1];
 outlet_vcflevel3=vcfGainValue[2];
@@ -584,12 +697,19 @@ outlet_level2=outGain[1];
 outlet_level3=outGain[2];
 outlet_level4=outGain[3];
 
+outlet_mix=mixLevel;
+
 beat--;
 if (beat <=0)
 {
 	renderNewMatrix();
 	beat = 100;
 
+	if (inlet_levelmain != lastLevel[4])
+	{
+		updateLevel(4, inlet_levelmain);
+		lastLevel[4] = inlet_levelmain;
+	}
 	if (inlet_level1 != lastLevel[0])
 	{
 		updateLevel(0, inlet_level1);
@@ -707,286 +827,373 @@ if (status == MIDI_CONTROL_CHANGE)
 	{
 		SetVolumeLevel(data1-48, data2);		
 	}
+	if (data1==52)
+	{
+		SetCombFeedBack(data2);
+	}
+	if (data1==55)
+	{
+		SetMix(data2);
+	}
 }]]></code.midihandler>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_2" x="868" y="378">
+   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="98" y="308">
+      <params>
+         <int32 name="bpm" value="110"/>
+         <int32 name="div" value="2"/>
+         <int32 name="total" value="8"/>
+         <int32 name="tap1" value="2"/>
+         <int32 name="tap2" value="3"/>
+         <int32 name="tap3" value="5"/>
+         <int32 name="tap4" value="7"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753">
+         <sDescription>BPM to samples</sDescription>
+         <author>JS</author>
+         <license>GPL</license>
+         <inlets>
+            <frac32 name="BPM"/>
+         </inlets>
+         <outlets>
+            <int32 name="samplesTotal"/>
+            <int32 name="tap1"/>
+            <int32 name="tap2"/>
+            <int32 name="tap3"/>
+            <int32 name="tap4"/>
+         </outlets>
+         <displays>
+            <int32.label name="d1"/>
+            <int32.label name="d2"/>
+         </displays>
+         <params>
+            <int32 name="bpm">
+               <MinValue i="40"/>
+               <MaxValue i="240"/>
+            </int32>
+            <int32 name="div">
+               <MinValue i="1"/>
+               <MaxValue i="24"/>
+            </int32>
+            <int32 name="total">
+               <MinValue i="3"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap1">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap2">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap3">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+            <int32 name="tap4">
+               <MinValue i="0"/>
+               <MaxValue i="16"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[outlet_samplesTotal =  60*param_total*48000/param_bpm/param_div;
+outlet_tap1 =  60*param_tap1*48000/param_bpm/param_div;
+outlet_tap2 =  60*param_tap2*48000/param_bpm/param_div;
+outlet_tap3 =  60*param_tap3*48000/param_bpm/param_div;
+outlet_tap4 =  60*param_tap4*48000/param_bpm/param_div;
+
+disp_d1 = outlet_samplesTotal;
+disp_d2 = outlet_tap1;]]></code.krate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_1" x="448" y="322">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad">
+         <sDescription>cheap vu meter display</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>disp.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="input"/>
+         </inlets>
+         <outlets>
+            <int32 name="vol"/>
+         </outlets>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t level = 0;
+int32_t attackTime = 5;
+int32_t releaseTime = 50;
+int32_t db = -96;
+int32_t attack = float_to_q27(exp (-1.0 / (attackTime * 48000 / 1000.0)));
+int32_t release = float_to_q27(exp (-1.0 / (releaseTime * 48000 / 1000.0)));]]></code.declaration>
+         <code.krate><![CDATA[static int processCnt = 0;
+if (--processCnt < 0)
+{
+	processCnt = 60;
+	db = static_cast<int>(log(q27_to_float(level))/log(2.0f)*6.0f);
+	//LogTextMessage("db:%d lev = %f", db,q27_to_float(level));
+}
+
+disp_v = db;
+outlet_vol = db;]]></code.krate>
+         <code.srate><![CDATA[auto s = inlet_in;
+if (s < 0)
+	s = -s;
+if (s > level)
+{
+	level = s - (___SMMUL(attack, s - level)>>5);
+}
+else
+{
+	level = s + (___SMMUL(attack, level-s)>>5);
+}]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1260" y="322">
       <params/>
       <attribs/>
    </obj>
-   <obj type="mix/mix 5 g" uuid="56b1acd0e073b180352b138775add006ce52ee35" name="mix_2" x="1064" y="406">
+   <patchobj type="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e" name="mix_2" x="1022" y="350">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e">
+         <sDescription>5 input s-rate mixer</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="in1" description="input 1"/>
+            <frac32buffer name="in2" description="input 2"/>
+            <frac32buffer name="in3" description="input 3"/>
+            <frac32buffer name="in4" description="input 4"/>
+            <frac32buffer name="in5" description="input 5"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="mix out"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.srate><![CDATA[outlet_out = inlet_in1+inlet_in2+inlet_in3+inlet_in4+inlet_in5;]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="1148" y="350">
       <params>
-         <frac32.u.map name="gain1" value="64.0"/>
-         <frac32.u.map name="gain2" value="64.0"/>
-         <frac32.u.map name="gain3" value="64.0"/>
-         <frac32.u.map name="gain4" value="64.0"/>
-         <frac32.u.map name="gain5" value="64.0"/>
+         <frac32.s.map name="freq" value="50.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="mix/mix 4 g" uuid="36f472cd81da2e17bd4b4ee11b53b4c82527220c" name="mix_3" x="1176" y="406">
-      <params>
-         <frac32.u.map name="gain1" value="34.5"/>
-         <frac32.u.map name="gain2" value="64.0"/>
-         <frac32.u.map name="gain3" value="32.0"/>
-         <frac32.u.map name="gain4" value="32.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1288" y="406">
+   <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_2" x="448" y="392">
       <params/>
       <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_1" x="350" y="462">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
-         <sDescription>rms meter</sDescription>
-         <author>Smashed Transistors</author>
-         <license>LGPL</license>
-         <helpPatch>rms meter.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in"/>
-         </inlets>
-         <outlets>
-            <frac32 name="rms"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[
-int32_t ms; //mean square
-float rms;
-]]></code.declaration>
-         <code.init><![CDATA[
-ms = 0;
-rms = 0;
-]]></code.init>
-         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
-rms = sqrtf(arm::q_to_float(ms, 27));
-uint32_t coef;
-MTOFEXTENDED(0, coef);
-coef >>= 3;]]></code.krate>
-         <code.srate><![CDATA[
- ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
-]]></code.srate>
-      </object>
-   </patchobj>
-   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_1" x="420" y="462">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
-         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+      <object id="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad">
+         <sDescription>cheap vu meter display</sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
-         <helpPatch>math.axh</helpPatch>
+         <helpPatch>disp.axh</helpPatch>
          <inlets>
-            <frac32 name="in" description="input"/>
+            <frac32buffer name="in" description="input"/>
          </inlets>
          <outlets>
-            <frac32 name="out" description="output"/>
+            <int32 name="vol"/>
          </outlets>
-         <displays/>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
          <params/>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
-         <code.init><![CDATA[val = 0;]]></code.init>
-         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<27),val);
-      else val = ___SMMLA(val-inlet_in,(-1<<27)+(62<<21),val);
-   outlet_out = val;]]></code.krate>
+         <code.declaration><![CDATA[int32_t level = 0;
+int32_t attackTime = 5;
+int32_t releaseTime = 50;
+int32_t db = -96;
+int32_t attack = float_to_q27(exp (-1.0 / (attackTime * 48000 / 1000.0)));
+int32_t release = float_to_q27(exp (-1.0 / (releaseTime * 48000 / 1000.0)));]]></code.declaration>
+         <code.krate><![CDATA[static int processCnt = 0;
+if (--processCnt < 0)
+{
+	processCnt = 60;
+	db = static_cast<int>(log(q27_to_float(level))/log(2.0f)*6.0f);
+	//LogTextMessage("db:%d lev = %f", db,q27_to_float(level));
+}
+
+disp_v = db;
+outlet_vol = db;]]></code.krate>
+         <code.srate><![CDATA[auto s = inlet_in;
+if (s < 0)
+	s = -s;
+if (s > level)
+{
+	level = s - (___SMMUL(attack, s - level)>>5);
+}
+else
+{
+	level = s + (___SMMUL(attack, level-s)>>5);
+}]]></code.srate>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_3" x="868" y="504">
+   <obj type="trisfreq" uuid="6b232d5e-876a-40b8-8e23-ac63c2c6f1c9" name="trisfreq_3" x="868" y="406">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_2" x="350" y="532">
+   <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_3" x="448" y="462">
       <params/>
       <attribs/>
-      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
-         <sDescription>rms meter</sDescription>
-         <author>Smashed Transistors</author>
-         <license>LGPL</license>
-         <helpPatch>rms meter.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in"/>
-         </inlets>
-         <outlets>
-            <frac32 name="rms"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[
-int32_t ms; //mean square
-float rms;
-]]></code.declaration>
-         <code.init><![CDATA[
-ms = 0;
-rms = 0;
-]]></code.init>
-         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
-rms = sqrtf(arm::q_to_float(ms, 27));
-uint32_t coef;
-MTOFEXTENDED(0, coef);
-coef >>= 3;]]></code.krate>
-         <code.srate><![CDATA[
- ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
-]]></code.srate>
-      </object>
-   </patchobj>
-   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_2" x="420" y="532">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
-         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+      <object id="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad">
+         <sDescription>cheap vu meter display</sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
-         <helpPatch>math.axh</helpPatch>
+         <helpPatch>disp.axh</helpPatch>
          <inlets>
-            <frac32 name="in" description="input"/>
+            <frac32buffer name="in" description="input"/>
          </inlets>
          <outlets>
-            <frac32 name="out" description="output"/>
+            <int32 name="vol"/>
          </outlets>
-         <displays/>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
          <params/>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
-         <code.init><![CDATA[val = 0;]]></code.init>
-         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
-      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
-   outlet_out = val;]]></code.krate>
+         <code.declaration><![CDATA[int32_t level = 0;
+int32_t attackTime = 5;
+int32_t releaseTime = 50;
+int32_t db = -96;
+int32_t attack = float_to_q27(exp (-1.0 / (attackTime * 48000 / 1000.0)));
+int32_t release = float_to_q27(exp (-1.0 / (releaseTime * 48000 / 1000.0)));]]></code.declaration>
+         <code.krate><![CDATA[static int processCnt = 0;
+if (--processCnt < 0)
+{
+	processCnt = 60;
+	db = static_cast<int>(log(q27_to_float(level))/log(2.0f)*6.0f);
+	//LogTextMessage("db:%d lev = %f", db,q27_to_float(level));
+}
+
+disp_v = db;
+outlet_vol = db;]]></code.krate>
+         <code.srate><![CDATA[auto s = inlet_in;
+if (s < 0)
+	s = -s;
+if (s > level)
+{
+	level = s - (___SMMUL(attack, s - level)>>5);
+}
+else
+{
+	level = s + (___SMMUL(attack, level-s)>>5);
+}]]></code.srate>
       </object>
    </patchobj>
-   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_3" x="350" y="602">
+   <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_4" x="448" y="532">
       <params/>
       <attribs/>
-      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
-         <sDescription>rms meter</sDescription>
-         <author>Smashed Transistors</author>
-         <license>LGPL</license>
-         <helpPatch>rms meter.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in"/>
-         </inlets>
-         <outlets>
-            <frac32 name="rms"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[
-int32_t ms; //mean square
-float rms;
-]]></code.declaration>
-         <code.init><![CDATA[
-ms = 0;
-rms = 0;
-]]></code.init>
-         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
-rms = sqrtf(arm::q_to_float(ms, 27));
-uint32_t coef;
-MTOFEXTENDED(0, coef);
-coef >>= 3;]]></code.krate>
-         <code.srate><![CDATA[
- ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
-]]></code.srate>
-      </object>
-   </patchobj>
-   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_3" x="420" y="602">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
-         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+      <object id="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad">
+         <sDescription>cheap vu meter display</sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
-         <helpPatch>math.axh</helpPatch>
+         <helpPatch>disp.axh</helpPatch>
          <inlets>
-            <frac32 name="in" description="input"/>
+            <frac32buffer name="in" description="input"/>
          </inlets>
          <outlets>
-            <frac32 name="out" description="output"/>
+            <int32 name="vol"/>
          </outlets>
-         <displays/>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
          <params/>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
-         <code.init><![CDATA[val = 0;]]></code.init>
-         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
-      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
-   outlet_out = val;]]></code.krate>
+         <code.declaration><![CDATA[int32_t level = 0;
+int32_t attackTime = 5;
+int32_t releaseTime = 50;
+int32_t db = -96;
+int32_t attack = float_to_q27(exp (-1.0 / (attackTime * 48000 / 1000.0)));
+int32_t release = float_to_q27(exp (-1.0 / (releaseTime * 48000 / 1000.0)));]]></code.declaration>
+         <code.krate><![CDATA[static int processCnt = 0;
+if (--processCnt < 0)
+{
+	processCnt = 60;
+	db = static_cast<int>(log(q27_to_float(level))/log(2.0f)*6.0f);
+	//LogTextMessage("db:%d lev = %f", db,q27_to_float(level));
+}
+
+disp_v = db;
+outlet_vol = db;]]></code.krate>
+         <code.srate><![CDATA[auto s = inlet_in;
+if (s < 0)
+	s = -s;
+if (s > level)
+{
+	level = s - (___SMMUL(attack, s - level)>>5);
+}
+else
+{
+	level = s + (___SMMUL(attack, level-s)>>5);
+}]]></code.srate>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="494a383d-276f-4289-bb1d-23ee57ca38f5" name="trisfreq_4" x="868" y="630">
+   <obj type="trisfreq" uuid="6b232d5e-876a-40b8-8e23-ac63c2c6f1c9" name="trisfreq_4" x="868" y="546">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399" name="rms_4" x="350" y="672">
+   <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_5" x="448" y="602">
       <params/>
       <attribs/>
-      <object id="patch/object" uuid="55331d8a-9c82-4d93-866c-ae9c17b0f399">
-         <sDescription>rms meter</sDescription>
-         <author>Smashed Transistors</author>
-         <license>LGPL</license>
-         <helpPatch>rms meter.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in"/>
-         </inlets>
-         <outlets>
-            <frac32 name="rms"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[
-int32_t ms; //mean square
-float rms;
-]]></code.declaration>
-         <code.init><![CDATA[
-ms = 0;
-rms = 0;
-]]></code.init>
-         <code.krate><![CDATA[outlet_rms = arm::float_to_q(rms, 27);
-rms = sqrtf(arm::q_to_float(ms, 27));
-uint32_t coef;
-MTOFEXTENDED(0, coef);
-coef >>= 3;]]></code.krate>
-         <code.srate><![CDATA[
- ms = ___SMMLA(coef, (___SMMUL(inlet_in, inlet_in)<<5) - ms, ms);
-]]></code.srate>
-      </object>
-   </patchobj>
-   <patchobj type="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5" name="smooth2_4" x="420" y="672">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="28c3dc7f-e3f0-4d03-9c39-ee93fb172ba5">
-         <sDescription>exponential smooth, separate rise and fall time</sDescription>
+      <object id="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad">
+         <sDescription>cheap vu meter display</sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
-         <helpPatch>math.axh</helpPatch>
+         <helpPatch>disp.axh</helpPatch>
          <inlets>
-            <frac32 name="in" description="input"/>
+            <frac32buffer name="in" description="input"/>
          </inlets>
          <outlets>
-            <frac32 name="out" description="output"/>
+            <int32 name="vol"/>
          </outlets>
-         <displays/>
+         <displays>
+            <int32.label name="v"/>
+         </displays>
          <params/>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[int32_t val;]]></code.declaration>
-         <code.init><![CDATA[val = 0;]]></code.init>
-         <code.krate><![CDATA[if (inlet_in>val)      val = ___SMMLA(val-inlet_in, (-1<<26),val);
-      else val = ___SMMLA(val-inlet_in,(-1<<26)+(62<<21),val);
-   outlet_out = val;]]></code.krate>
+         <code.declaration><![CDATA[int32_t level = 0;
+int32_t attackTime = 5;
+int32_t releaseTime = 50;
+int32_t db = -96;
+int32_t attack = float_to_q27(exp (-1.0 / (attackTime * 48000 / 1000.0)));
+int32_t release = float_to_q27(exp (-1.0 / (releaseTime * 48000 / 1000.0)));]]></code.declaration>
+         <code.krate><![CDATA[static int processCnt = 0;
+if (--processCnt < 0)
+{
+	processCnt = 60;
+	db = static_cast<int>(log(q27_to_float(level))/log(2.0f)*6.0f);
+	//LogTextMessage("db:%d lev = %f", db,q27_to_float(level));
+}
+
+disp_v = db;
+outlet_vol = db;]]></code.krate>
+         <code.srate><![CDATA[auto s = inlet_in;
+if (s < 0)
+	s = -s;
+if (s > level)
+{
+	level = s - (___SMMUL(attack, s - level)>>5);
+}
+else
+{
+	level = s + (___SMMUL(attack, level-s)>>5);
+}]]></code.srate>
       </object>
    </patchobj>
    <nets>
@@ -997,7 +1204,7 @@ coef >>= 3;]]></code.krate>
       <net>
          <source obj="in_1" outlet="wave"/>
          <dest obj="gain_1" inlet="in"/>
-         <dest obj="mix_3" inlet="in2"/>
+         <dest obj="mix_3" inlet="in1"/>
       </net>
       <net>
          <source obj="mix_3" outlet="out"/>
@@ -1036,6 +1243,7 @@ coef >>= 3;]]></code.krate>
       <net>
          <source obj="toggle_2" outlet="o"/>
          <dest obj="led1_1" inlet="in"/>
+         <dest obj="echo_1" inlet="samplehold"/>
       </net>
       <net>
          <source obj="gain_1" outlet="out"/>
@@ -1046,70 +1254,38 @@ coef >>= 3;]]></code.krate>
          <dest obj="echo_1" inlet="in"/>
       </net>
       <net>
-         <source obj="echo_1" outlet="out4"/>
+         <source obj="echo_1" outlet="loopend"/>
          <dest obj="mix_1" inlet="in2"/>
-         <dest obj="mix_2" inlet="in5"/>
+         <dest obj="vu_5" inlet="in"/>
       </net>
       <net>
          <source obj="lp1_1" outlet="out"/>
          <dest obj="mix_1" inlet="in3"/>
+         <dest obj="mix_3" inlet="in2"/>
       </net>
       <net>
          <source obj="mix_2" outlet="out"/>
          <dest obj="lp1_1" inlet="in"/>
-         <dest obj="mix_3" inlet="in1"/>
       </net>
       <net>
-         <source obj="smooth2_1" outlet="out"/>
-         <dest obj="midihandler" inlet="level1"/>
-      </net>
-      <net>
-         <source obj="echo_1" outlet="out0"/>
-         <dest obj="rms_1" inlet="in"/>
+         <source obj="echo_1" outlet="tap0"/>
+         <dest obj="vu_1" inlet="in"/>
          <dest obj="trisfreq_1" inlet="audioin"/>
       </net>
       <net>
-         <source obj="rms_1" outlet="rms"/>
-         <dest obj="smooth2_1" inlet="in"/>
-      </net>
-      <net>
-         <source obj="rms_2" outlet="rms"/>
-         <dest obj="smooth2_2" inlet="in"/>
-      </net>
-      <net>
-         <source obj="rms_3" outlet="rms"/>
-         <dest obj="smooth2_3" inlet="in"/>
-      </net>
-      <net>
-         <source obj="rms_4" outlet="rms"/>
-         <dest obj="smooth2_4" inlet="in"/>
-      </net>
-      <net>
-         <source obj="echo_1" outlet="out1"/>
-         <dest obj="rms_2" inlet="in"/>
+         <source obj="echo_1" outlet="tap1"/>
+         <dest obj="vu_2" inlet="in"/>
          <dest obj="trisfreq_2" inlet="audioin"/>
       </net>
       <net>
-         <source obj="echo_1" outlet="out2"/>
-         <dest obj="rms_3" inlet="in"/>
+         <source obj="echo_1" outlet="tap2"/>
+         <dest obj="vu_3" inlet="in"/>
          <dest obj="trisfreq_3" inlet="audioin"/>
       </net>
       <net>
-         <source obj="echo_1" outlet="out3"/>
-         <dest obj="rms_4" inlet="in"/>
+         <source obj="echo_1" outlet="tap3"/>
+         <dest obj="vu_4" inlet="in"/>
          <dest obj="trisfreq_4" inlet="audioin"/>
-      </net>
-      <net>
-         <source obj="smooth2_2" outlet="out"/>
-         <dest obj="midihandler" inlet="level2"/>
-      </net>
-      <net>
-         <source obj="smooth2_3" outlet="out"/>
-         <dest obj="midihandler" inlet="level3"/>
-      </net>
-      <net>
-         <source obj="smooth2_4" outlet="out"/>
-         <dest obj="midihandler" inlet="level4"/>
       </net>
       <net>
          <source obj="trisfreq_1" outlet="outlet_1"/>
@@ -1223,6 +1399,37 @@ coef >>= 3;]]></code.krate>
          <source obj="midihandler" outlet="ringlevel1"/>
          <dest obj="trisfreq_1" inlet="ring_gain"/>
       </net>
+      <net>
+         <source obj="vu_1" outlet="vol"/>
+         <dest obj="midihandler" inlet="level1"/>
+      </net>
+      <net>
+         <source obj="vu_2" outlet="vol"/>
+         <dest obj="midihandler" inlet="level2"/>
+      </net>
+      <net>
+         <source obj="vu_3" outlet="vol"/>
+         <dest obj="midihandler" inlet="level3"/>
+      </net>
+      <net>
+         <source obj="vu_4" outlet="vol"/>
+         <dest obj="midihandler" inlet="level4"/>
+      </net>
+      <net>
+         <source obj="vu_5" outlet="vol"/>
+         <dest obj="midihandler" inlet="levelmain"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="mix"/>
+         <dest obj="mix_3" inlet="mix"/>
+      </net>
+      <net>
+         <source obj="dial_1" outlet="out"/>
+         <dest obj="trisfreq_1" inlet="wah_q"/>
+         <dest obj="trisfreq_2" inlet="wah_q"/>
+         <dest obj="trisfreq_3" inlet="wah_q"/>
+         <dest obj="trisfreq_4" inlet="wah_q"/>
+      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
@@ -1235,9 +1442,9 @@ coef >>= 3;]]></code.krate>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>0</x>
-      <y>30</y>
-      <width>1426</width>
-      <height>877</height>
+      <x>91</x>
+      <y>56</y>
+      <width>1329</width>
+      <height>824</height>
    </windowPos>
 </patch-1.0>

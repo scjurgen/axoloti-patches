@@ -10,7 +10,7 @@
          <inlets>
             <frac32buffer name="in" description="in"/>
             <frac32 name="noteheight" description=""/>
-            <frac32.bipolar name="fdbkGain" description="feedback gain"/>
+            <frac32.bipolar name="fdbkTime" description="feedback time in seconds"/>
          </inlets>
          <outlets>
             <frac32buffer name="out" description="out"/>
@@ -24,8 +24,30 @@ int32_t dpos;
 int32_t currentWidth;
 int32_t newWidth;
 int32_t lastF;
-int32_t step;]]></code.declaration>
-         <code.init><![CDATA[#define ADJUST_WIDTH 4
+int32_t step;
+int32_t fdbk_gain;
+int32_t fdbkTime;
+int32_t totalGain;
+
+void calcFeedBack(int32_t width)
+{
+	float t = q27_to_float(fdbkTime);
+     float p = 48000.0f/width*t;
+	if (t >=0)
+	{
+     	fdbk_gain = float_to_q27(powf(10.0f, (1.0f / p * log(0.5f))));
+	}
+	else
+	{
+     	fdbk_gain = float_to_q27(-powf(10.0f, (1.0f / -p * log(0.5f))));
+	}
+	if (fdbk_gain > 0)
+		totalGain = (1<<27) - fdbk_gain/2;
+	else
+		totalGain = (1<<27) + fdbk_gain/2;
+	//LogTextMessage("ring size: %d t=%f fdbk_gain %f , totalGain %f", width, q27_to_float(fdbkTime), q27_to_float(fdbk_gain), q27_to_float(totalGain));
+}]]></code.declaration>
+         <code.init><![CDATA[#define ADJUST_WIDTH 5
 
 int i;
 for (i = 0; i < sizeof(d)/sizeof(d[0]); i++)
@@ -34,9 +56,14 @@ dpos = 0;
 step = 0;
 lastF = 1<<27;
 currentWidth = 120;]]></code.init>
-         <code.krate><![CDATA[
+         <code.krate><![CDATA[static int32_t old_time = 0;
 
-int32_t fdbk_gain = inlet_fdbkGain;
+if (old_time != inlet_fdbkTime)
+{
+	fdbkTime = inlet_fdbkTime;
+	calcFeedBack(currentWidth);
+	old_time = inlet_fdbkTime;
+}
 
 if (lastF != inlet_noteheight) 
 {
@@ -48,6 +75,7 @@ if (lastF != inlet_noteheight)
 		newWidth = 10;
 	if (newWidth >= sizeof(d)/sizeof(d[0]))
 		newWidth = sizeof(d)/sizeof(d[0])-1;
+	calcFeedBack(newWidth);
 }
 
 if (--step < 0)
@@ -65,6 +93,7 @@ din += inlet_in;
 d[dpos++] = din;
 if (dpos >= currentWidth)
 	dpos = 0;
+din = ___SMMUL(din, totalGain) << 5;
 outlet_out = din;]]></code.srate>
       </object>
    </patchobj>
@@ -130,7 +159,6 @@ outlet_wave= (r>>4);]]></code.srate>
       <params/>
       <attribs/>
       <object id="patch/object" uuid="95feb278-e44e-4a2e-b0d2-1ecd0baa6629">
-         <sDescription></sDescription>
          <author>Johannes Taelman</author>
          <license>BSD</license>
          <inlets>
@@ -175,14 +203,8 @@ if (inlet_gain3 != lastGain[2])
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="comb_gain" x="14" y="364">
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="comb_gain" x="14" y="336">
       <params/>
-      <attribs/>
-   </obj>
-   <obj type="vcwah" uuid="87a62ee1-cddb-43d5-b254-0327ec860891" name="obj_1" x="322" y="364">
-      <params>
-         <frac32.u.map name="flt:reso" value="62.5"/>
-      </params>
       <attribs/>
    </obj>
    <patchobj type="patch/object" uuid="72e0f995-fb6d-4dab-9f1f-15ef742292a4" name="gain_1" x="672" y="364">
@@ -206,24 +228,137 @@ if (inlet_gain3 != lastGain[2])
          <code.srate><![CDATA[outlet_out= __SSAT(___SMMUL(inlet_gain,__SSAT(inlet_in,28)<<4)<<1,28);]]></code.srate>
       </object>
    </patchobj>
+   <patcher type="patch/patcher" uuid="2c6baa6f-3b09-431b-8d77-b8f303b2c2b3" name="obj_1" x="322" y="392">
+      <params>
+         <frac32.u.map name="vcf3_1:reso" value="31.0"/>
+      </params>
+      <attribs/>
+      <subpatch appVersion="1.0.12">
+         <obj type="patch/inlet a" uuid="b577fe41e0a6bc7b5502ce33cb8a3129e2e28ee5" name="in" x="0" y="14">
+            <params/>
+            <attribs/>
+         </obj>
+         <obj type="dist/rectifier" uuid="a994d72e4491dedd2655b7a06a4a3f38fcca68d2" name="rectifier_2" x="84" y="14">
+            <params/>
+            <attribs/>
+         </obj>
+         <patchobj type="patch/object" uuid="46afc8f5-692e-432c-89a0-e0d3195435fa" name="vcf3_1" x="238" y="112">
+            <params>
+               <frac32.s.map name="pitch" value="13.0"/>
+               <frac32.u.map name="reso" onParent="true" value="64.0"/>
+            </params>
+            <attribs/>
+            <object id="patch/object" uuid="46afc8f5-692e-432c-89a0-e0d3195435fa">
+               <sDescription>2-pole resonant low-pass filter (biquad), filter updated at k-rate</sDescription>
+               <author>Johannes Taelman</author>
+               <license>BSD</license>
+               <helpPatch>filter.axh</helpPatch>
+               <inlets>
+                  <frac32buffer name="in" description="filter input"/>
+                  <frac32 name="pitch" description="pitch"/>
+                  <frac32 name="reso" description="filter resonance"/>
+               </inlets>
+               <outlets>
+                  <frac32buffer name="out" description="filter output"/>
+               </outlets>
+               <displays/>
+               <params>
+                  <frac32.s.map name="pitch"/>
+                  <frac32.u.map.filterq name="reso"/>
+               </params>
+               <attribs/>
+               <includes/>
+               <code.declaration><![CDATA[data_filter_biquad_A fd;
+]]></code.declaration>
+               <code.init><![CDATA[  init_filter_biquad_A(&fd);
+]]></code.init>
+               <code.krate><![CDATA[  {
+      int32_t freq;
+      MTOF(param_pitch + inlet_pitch,freq);
+      f_filter_biquad_A(&fd,inlet_in,outlet_out,freq,INT_MAX - (__USAT(inlet_reso + param_reso,27)<<4));
+   }
+]]></code.krate>
+            </object>
+         </patchobj>
+         <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="inlet_1" x="0" y="126">
+            <params/>
+            <attribs/>
+         </obj>
+         <obj type="patch/outlet a" uuid="abd8c5fd3b0524a6630f65cad6dc27f6c58e2a3e" name="out" x="448" y="126">
+            <params/>
+            <attribs/>
+         </obj>
+         <obj type="math/smooth" uuid="6c5d08c282bb08bff24af85b4891447f99bcbc97" name="smooth_1" x="84" y="182">
+            <params>
+               <frac32.u.map name="time" value="18.0"/>
+            </params>
+            <attribs/>
+         </obj>
+         <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="reso" x="14" y="280">
+            <params/>
+            <attribs/>
+         </obj>
+         <nets>
+            <net>
+               <source obj="smooth_1" outlet="out"/>
+               <dest obj="vcf3_1" inlet="pitch"/>
+            </net>
+            <net>
+               <source obj="in" outlet="inlet"/>
+               <dest obj="rectifier_2" inlet="in"/>
+            </net>
+            <net>
+               <source obj="vcf3_1" outlet="out"/>
+               <dest obj="out" inlet="outlet"/>
+            </net>
+            <net>
+               <source obj="inlet_1" outlet="inlet"/>
+               <dest obj="smooth_1" inlet="in"/>
+            </net>
+            <net>
+               <source obj="rectifier_2" outlet="out"/>
+               <dest obj="vcf3_1" inlet="in"/>
+            </net>
+            <net>
+               <source obj="reso" outlet="inlet"/>
+               <dest obj="vcf3_1" inlet="reso"/>
+            </net>
+         </nets>
+         <settings>
+            <subpatchmode>no</subpatchmode>
+         </settings>
+         <notes><![CDATA[]]></notes>
+         <windowPos>
+            <x>770</x>
+            <y>339</y>
+            <width>660</width>
+            <height>436</height>
+         </windowPos>
+         <helpPatch>wah1.axh</helpPatch>
+      </subpatch>
+   </patcher>
    <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="ring_gain" x="14" y="406">
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="wah_gain" x="14" y="448">
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="wah_gain" x="14" y="462">
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="outgain" x="14" y="490">
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="wah_q" x="14" y="504">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="outgain" x="14" y="574">
       <params/>
       <attribs/>
    </obj>
    <nets>
       <net>
          <source obj="audioin" outlet="inlet"/>
-         <dest obj="obj_1" inlet="in"/>
          <dest obj="RingMod_1" inlet="a"/>
          <dest obj="fdbkcomb_2" inlet="in"/>
+         <dest obj="obj_1" inlet="in"/>
       </net>
       <net>
          <source obj="sine_1" outlet="wave"/>
@@ -231,9 +366,9 @@ if (inlet_gain3 != lastGain[2])
       </net>
       <net>
          <source obj="pitch" outlet="inlet"/>
-         <dest obj="obj_1" inlet="inlet_1"/>
          <dest obj="mtof_1" inlet="pitch"/>
          <dest obj="fdbkcomb_2" inlet="noteheight"/>
+         <dest obj="obj_1" inlet="inlet_1"/>
       </net>
       <net>
          <source obj="obj_1" outlet="out"/>
@@ -246,10 +381,6 @@ if (inlet_gain3 != lastGain[2])
       <net>
          <source obj="mtof_1" outlet="frequency"/>
          <dest obj="sine_1" inlet="freq"/>
-      </net>
-      <net>
-         <source obj="comb_feedback" outlet="inlet"/>
-         <dest obj="fdbkcomb_2" inlet="fdbkGain"/>
       </net>
       <net>
          <source obj="ring_gain" outlet="inlet"/>
@@ -279,14 +410,22 @@ if (inlet_gain3 != lastGain[2])
          <source obj="outgain" outlet="inlet"/>
          <dest obj="gain_1" inlet="gain"/>
       </net>
+      <net>
+         <source obj="comb_feedback" outlet="inlet"/>
+         <dest obj="fdbkcomb_2" inlet="fdbkTime"/>
+      </net>
+      <net>
+         <source obj="wah_q" outlet="inlet"/>
+         <dest obj="obj_1" inlet="reso"/>
+      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>159</x>
-      <y>90</y>
+      <x>331</x>
+      <y>134</y>
       <width>1109</width>
       <height>766</height>
    </windowPos>
