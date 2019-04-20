@@ -19,7 +19,7 @@
          <params/>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[int32_t d[1600]; // minimum of 30 HZ (bit lower than B0)
+         <code.declaration><![CDATA[int32_t *d;
 int32_t dpos;
 int32_t currentWidth;
 int32_t newWidth;
@@ -48,9 +48,13 @@ void calcFeedBack(int32_t width)
 	//LogTextMessage("ring size: %d t=%f fdbk_gain %f , totalGain %f", width, q27_to_float(fdbkTime), q27_to_float(fdbk_gain), q27_to_float(totalGain));
 }]]></code.declaration>
          <code.init><![CDATA[#define ADJUST_WIDTH 5
+#define MAXSAMPLES_LOWNOTE 1600
+
+static int32_t _array[MAXSAMPLES_LOWNOTE]  __attribute__ ((section (".sdram")));
+d = &_array[0];
 
 int i;
-for (i = 0; i < sizeof(d)/sizeof(d[0]); i++)
+for (i = 0; i < MAXSAMPLES_LOWNOTE; i++)
    d[i] = 0;
 dpos = 0;
 step = 0;
@@ -73,8 +77,8 @@ if (lastF != inlet_noteheight)
 	lastF = inlet_noteheight;
 	if (newWidth < 10)
 		newWidth = 10;
-	if (newWidth >= sizeof(d)/sizeof(d[0]))
-		newWidth = sizeof(d)/sizeof(d[0])-1;
+	if (newWidth >= MAXSAMPLES_LOWNOTE)
+		newWidth = MAXSAMPLES_LOWNOTE-1;
 	calcFeedBack(newWidth);
 }
 
@@ -101,7 +105,7 @@ outlet_out = din;]]></code.srate>
       <params/>
       <attribs/>
    </obj>
-   <obj type="sss/dist/RingMod" uuid="703c4d73-cdf2-4ca9-8f1a-f7d944ff99cb" name="RingMod_1" x="322" y="126">
+   <obj type="sss/dist/RingMod" uuid="703c4d73-cdf2-4ca9-8f1a-f7d944ff99cb" name="RingMod_1" x="336" y="126">
       <params>
          <int32.hradio name="mode" value="0"/>
          <frac32.u.map name="gain" value="8.0"/>
@@ -162,13 +166,13 @@ outlet_wave= (r>>4);]]></code.srate>
          <author>Johannes Taelman</author>
          <license>BSD</license>
          <inlets>
-            <frac32buffer name="bus_in" description="input with unity gain"/>
             <frac32buffer name="in1" description="input 1"/>
             <frac32buffer name="in2" description="input 2"/>
             <frac32buffer name="in3" description="input 3"/>
             <frac32 name="gain1"/>
             <frac32 name="gain2"/>
             <frac32 name="gain3"/>
+            <frac32 name="outgain"/>
          </inlets>
          <outlets>
             <frac32buffer name="out" description="mix out"/>
@@ -181,22 +185,20 @@ outlet_wave= (r>>4);]]></code.srate>
          <code.krate><![CDATA[if (inlet_gain1 != lastGain[0])
 {
 	lastGain[0] = inlet_gain1;
-	LogTextMessage("new comb gain: %f", q27_to_float(inlet_gain1));
 }
 if (inlet_gain2 != lastGain[1])
 {
 	lastGain[1] = inlet_gain2;
-	LogTextMessage("new ring gain: %f", q27_to_float(inlet_gain2));
 }
 if (inlet_gain3 != lastGain[2])
 {
 	lastGain[2] = inlet_gain3;
-	LogTextMessage("new wah gain: %f", q27_to_float(inlet_gain3));
 }]]></code.krate>
          <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,inlet_gain1 << 4);
-   accum = ___SMMLA(inlet_in2,inlet_gain2 << 4,accum);
-   accum = ___SMMLA(inlet_in3,inlet_gain3 << 4,accum);
-   outlet_out=  __SSAT(inlet_bus__in + (accum<<1),28);]]></code.srate>
+accum = ___SMMLA(inlet_in2,inlet_gain2 << 4,accum);
+accum = ___SMMLA(inlet_in3,inlet_gain3 << 4,accum);
+accum = ___SMMUL(accum<<2, inlet_outgain<<3);
+outlet_out = accum;]]></code.srate>
       </object>
    </patchobj>
    <obj type="patch/outlet a" uuid="abd8c5fd3b0524a6630f65cad6dc27f6c58e2a3e" name="outlet_1" x="756" y="308">
@@ -207,28 +209,7 @@ if (inlet_gain3 != lastGain[2])
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="72e0f995-fb6d-4dab-9f1f-15ef742292a4" name="gain_1" x="672" y="364">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="72e0f995-fb6d-4dab-9f1f-15ef742292a4">
-         <author>Johannes Taelman</author>
-         <license>BSD</license>
-         <helpPatch>math.axh</helpPatch>
-         <inlets>
-            <frac32buffer name="in" description="input"/>
-            <frac32 name="gain"/>
-         </inlets>
-         <outlets>
-            <frac32buffer name="out" description="output"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.srate><![CDATA[outlet_out= __SSAT(___SMMUL(inlet_gain,__SSAT(inlet_in,28)<<4)<<1,28);]]></code.srate>
-      </object>
-   </patchobj>
-   <patcher type="patch/patcher" uuid="2c6baa6f-3b09-431b-8d77-b8f303b2c2b3" name="obj_1" x="322" y="392">
+   <patcher type="patch/patcher" uuid="3b4d9bac-577c-44cb-9694-23b4ed6c38ce" name="obj_1" x="322" y="392">
       <params>
          <frac32.u.map name="vcf3_1:reso" value="31.0"/>
       </params>
@@ -356,9 +337,9 @@ if (inlet_gain3 != lastGain[2])
    <nets>
       <net>
          <source obj="audioin" outlet="inlet"/>
+         <dest obj="obj_1" inlet="in"/>
          <dest obj="RingMod_1" inlet="a"/>
          <dest obj="fdbkcomb_2" inlet="in"/>
-         <dest obj="obj_1" inlet="in"/>
       </net>
       <net>
          <source obj="sine_1" outlet="wave"/>
@@ -367,8 +348,8 @@ if (inlet_gain3 != lastGain[2])
       <net>
          <source obj="pitch" outlet="inlet"/>
          <dest obj="mtof_1" inlet="pitch"/>
-         <dest obj="fdbkcomb_2" inlet="noteheight"/>
          <dest obj="obj_1" inlet="inlet_1"/>
+         <dest obj="fdbkcomb_2" inlet="noteheight"/>
       </net>
       <net>
          <source obj="obj_1" outlet="out"/>
@@ -399,18 +380,6 @@ if (inlet_gain3 != lastGain[2])
          <dest obj="mix_1" inlet="in1"/>
       </net>
       <net>
-         <source obj="gain_1" outlet="out"/>
-         <dest obj="outlet_1" inlet="outlet"/>
-      </net>
-      <net>
-         <source obj="mix_1" outlet="out"/>
-         <dest obj="gain_1" inlet="in"/>
-      </net>
-      <net>
-         <source obj="outgain" outlet="inlet"/>
-         <dest obj="gain_1" inlet="gain"/>
-      </net>
-      <net>
          <source obj="comb_feedback" outlet="inlet"/>
          <dest obj="fdbkcomb_2" inlet="fdbkTime"/>
       </net>
@@ -418,14 +387,22 @@ if (inlet_gain3 != lastGain[2])
          <source obj="wah_q" outlet="inlet"/>
          <dest obj="obj_1" inlet="reso"/>
       </net>
+      <net>
+         <source obj="mix_1" outlet="out"/>
+         <dest obj="outlet_1" inlet="outlet"/>
+      </net>
+      <net>
+         <source obj="outgain" outlet="inlet"/>
+         <dest obj="mix_1" inlet="outgain"/>
+      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>331</x>
-      <y>134</y>
+      <x>343</x>
+      <y>23</y>
       <width>1109</width>
       <height>766</height>
    </windowPos>

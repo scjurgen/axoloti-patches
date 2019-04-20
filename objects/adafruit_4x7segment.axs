@@ -1,9 +1,9 @@
 <patch-1.0 appVersion="1.0.12">
-   <obj type="patch/inlet i" uuid="f11927f00c59219df0c50f73056aa19f125540b7" name="intvalue" x="42" y="98">
+   <obj type="patch/inlet i" uuid="f11927f00c59219df0c50f73056aa19f125540b7" name="intvalue" x="14" y="14">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="492db39d-c840-4232-b4ac-13f31a6099b7" name="mpr121_int_1" x="266" y="154">
+   <patchobj type="patch/object" uuid="492db39d-c840-4232-b4ac-13f31a6099b7" name="mpr121_int_1" x="168" y="14">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="492db39d-c840-4232-b4ac-13f31a6099b7">
@@ -12,6 +12,7 @@
          <inlets>
             <int32 name="i1"/>
             <bool32 name="dbldot"/>
+            <int32 name="prefixCharacter"/>
          </inlets>
          <outlets/>
          <displays/>
@@ -46,7 +47,7 @@ struct ada7seg_state {
 	
 	void setNewValues(char *outb, int size)
 	{
-		LogTextMessage("show: %s", outb);
+		//LogTextMessage("show: %s", outb);
 		currentData[2] = 0;
 		for (int i=0; i < size; ++i)
 		{
@@ -195,10 +196,42 @@ void initDisplayData()
 	}
 }
 
+void int2a(int num, char* str) 
+{ 
+    bool isNegative = false;
+    if (num == 0) 
+    { 
+        str[0] = '0'; 
+        str[1] = 0; 
+        return; 
+    } 
+    if (num < 0) 
+    { 
+        isNegative = true; 
+        num = -num; 
+    } 
+    char outb[16];
+    int idx = 15;
+    while (num != 0) 
+    { 
+        int rem = num % 10; 
+        outb[idx--] = (rem > 9)? (rem-10) + 'a' : rem + '0'; 
+        num = num/10; 
+    } 
+    if (isNegative) 
+        outb[idx--] = '-'; 
+    while (idx++ < 16)
+    {
+    	  *str++=outb[idx];
+    }
+    *str = 0;
+} 
+
 void setNewIntValue(int val)
 {
-	char outb[8];
-	sprintf(outb, "%4d", val);
+	char outb[16];
+	int2a(val, outb);
+	
 	ada7seg_state.setNewValues(outb, 4);
 }]]></code.declaration>
          <code.init><![CDATA[ada7seg_init(&ada7seg_state);
@@ -206,6 +239,8 @@ void setNewIntValue(int val)
 initDisplayData();]]></code.init>
          <code.dispose><![CDATA[ada7seg_dispose(&ada7seg_state);]]></code.dispose>
          <code.krate><![CDATA[static int prevValue = -1;
+static int prevDblDot = -1;
+static int prevPrefix = -1;
 
 if (prevValue != inlet_i1)
 {
@@ -214,10 +249,18 @@ if (prevValue != inlet_i1)
 }]]></code.krate>
       </object>
    </patchobj>
+   <obj type="patch/inlet b" uuid="3b0d3eacb5bb978cb05d1372aa2714d5a4790844" name="doubledot" x="14" y="56">
+      <params/>
+      <attribs/>
+   </obj>
    <nets>
       <net>
          <source obj="intvalue" outlet="inlet"/>
          <dest obj="mpr121_int_1" inlet="i1"/>
+      </net>
+      <net>
+         <source obj="doubledot" outlet="inlet"/>
+         <dest obj="mpr121_int_1" inlet="dbldot"/>
       </net>
    </nets>
    <settings>
@@ -225,9 +268,9 @@ if (prevValue != inlet_i1)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>411</x>
-      <y>250</y>
+      <x>786</x>
+      <y>190</y>
       <width>651</width>
-      <height>639</height>
+      <height>354</height>
    </windowPos>
 </patch-1.0>
