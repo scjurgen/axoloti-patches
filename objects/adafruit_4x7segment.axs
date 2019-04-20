@@ -18,7 +18,9 @@
          <displays/>
          <params/>
          <attribs/>
-         <includes/>
+         <includes>
+            <include>os/various/chprintf.h</include>
+         </includes> 
          <depends>
             <depend>I2CD1</depend>
          </depends>
@@ -34,6 +36,7 @@
 
 #define ADASEG_I2C_TIMEOUT 30	// chibios ticks
 
+
 struct ada7seg_state {
 	stkalign_t thd_wa[THD_WORKING_AREA_SIZE(512) / sizeof(stkalign_t)];	
 	Thread *thd;		
@@ -42,26 +45,41 @@ struct ada7seg_state {
 	uint8_t *tx;
 	bool hasNewValue;
 	int32_t value;
+	bool hasPrefix;
+	int prefixValue;
+
 	uint16_t currentData[5];
 	uint16_t displayValue[10];
-	
-	void setNewValues(char *outb, int size)
+
+	void setDirectValue(int pos, int val)
 	{
-		//LogTextMessage("show: %s", outb);
+		currentData[pos] = val;
+		hasNewValue = true;
+	}
+	
+	void setNewValues(char *outb, int i)
+	{
 		currentData[2] = 0;
-		for (int i=0; i < size; ++i)
+		
+		while (*outb)
 		{
 			int idx = i>1?i+1:i;
-			if (outb[i] == ' ')
+			if (*outb == ' ')
 				currentData[idx] = 0;
 			else
-			if (outb[i] == '-')
+			if (*outb == '-')
 				currentData[idx] = 0x40;
 			else
-			if ((outb[i] >= '0') && (outb[i] <= '9'))
+			if ((*outb >= '0') && (*outb <= '9'))
 			{	
-				currentData[idx] = displayValue[outb[i]-'0'];
+				currentData[idx] = displayValue[*outb-'0'];
 			}
+			i++;
+			outb++;
+		}
+		if (hasPrefix)
+		{
+			currentData[0] = prefixValue;
 		}
 		hasNewValue = true;	
 	}
@@ -196,43 +214,75 @@ void initDisplayData()
 	}
 }
 
-void int2a(int num, char* str) 
-{ 
+
+void int2a(int num, char* str, int pad)
+{
     bool isNegative = false;
-    if (num == 0) 
-    { 
-        str[0] = '0'; 
-        str[1] = 0; 
-        return; 
-    } 
-    if (num < 0) 
-    { 
-        isNegative = true; 
-        num = -num; 
-    } 
-    char outb[16];
-    int idx = 15;
-    while (num != 0) 
-    { 
-        int rem = num % 10; 
-        outb[idx--] = (rem > 9)? (rem-10) + 'a' : rem + '0'; 
-        num = num/10; 
-    } 
-    if (isNegative) 
-        outb[idx--] = '-'; 
-    while (idx++ < 16)
+    if (num == 0)
     {
-    	  *str++=outb[idx];
+    		for (auto i=0; i < pad-1; ++i)
+    		{
+    			str[i] = ' ';
+    		}
+        str[pad-1] = '0';
+        str[pad] = 0;
+        return;
+    }
+    if (num < 0)
+    {
+        isNegative = true;
+        num = -num;
+    }
+    char outb[16];
+
+    int idx = 15;
+    int w = 0;
+    while (num != 0)
+    {
+        int rem = num % 10;
+        outb[idx--] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        num = num/10;
+        w++;
+    }
+    if (isNegative)
+    {
+        outb[idx--] = '-';
+        w++;
+    }
+    while (w < pad)
+    {
+    	   w++;
+    	   *str++ = ' ';
+    }
+    while (++idx < 16)
+    {
+        *str++=outb[idx];
     }
     *str = 0;
-} 
+}
+
 
 void setNewIntValue(int val)
 {
 	char outb[16];
-	int2a(val, outb);
-	
-	ada7seg_state.setNewValues(outb, 4);
+	int w = ada7seg_state.hasPrefix?3:4;
+	int2a(val, outb, w);
+	ada7seg_state.setNewValues(outb, ada7seg_state.hasPrefix?1:0);
+}
+
+
+void setPrefix(int val)
+{
+    if (val == -1)
+    {
+       ada7seg_state.hasPrefix = false;
+    }
+    else 
+    {
+    	  ada7seg_state.hasPrefix = true;
+    	  ada7seg_state.prefixValue = val;
+	  ada7seg_state.setDirectValue(0, val);
+    }
 }]]></code.declaration>
          <code.init><![CDATA[ada7seg_init(&ada7seg_state);
 
@@ -246,10 +296,20 @@ if (prevValue != inlet_i1)
 {
 	prevValue = inlet_i1;
 	setNewIntValue(prevValue);
+}
+
+if (prevPrefix != inlet_prefixCharacter)
+{
+	prevPrefix = inlet_prefixCharacter;
+	setPrefix(prevPrefix);
 }]]></code.krate>
       </object>
    </patchobj>
    <obj type="patch/inlet b" uuid="3b0d3eacb5bb978cb05d1372aa2714d5a4790844" name="doubledot" x="14" y="56">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="patch/inlet i" uuid="f11927f00c59219df0c50f73056aa19f125540b7" name="prefix" x="14" y="98">
       <params/>
       <attribs/>
    </obj>
@@ -262,14 +322,23 @@ if (prevValue != inlet_i1)
          <source obj="doubledot" outlet="inlet"/>
          <dest obj="mpr121_int_1" inlet="dbldot"/>
       </net>
+      <net>
+         <source obj="prefix" outlet="inlet"/>
+         <dest obj="mpr121_int_1" inlet="prefixCharacter"/>
+      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
+      <MidiChannel>1</MidiChannel>
+      <NPresets>8</NPresets>
+      <NPresetEntries>32</NPresetEntries>
+      <NModulationSources>8</NModulationSources>
+      <NModulationTargetsPerSource>8</NModulationTargetsPerSource>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>786</x>
-      <y>190</y>
+      <x>782</x>
+      <y>415</y>
       <width>651</width>
       <height>354</height>
    </windowPos>
