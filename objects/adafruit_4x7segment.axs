@@ -20,7 +20,7 @@
          <attribs/>
          <includes>
             <include>os/various/chprintf.h</include>
-         </includes> 
+         </includes>
          <depends>
             <depend>I2CD1</depend>
          </depends>
@@ -46,7 +46,7 @@ struct ada7seg_state {
 	bool hasNewValue;
 	int32_t value;
 	bool hasPrefix;
-	int prefixValue;
+	int prefix;
 
 	uint16_t currentData[5];
 	uint16_t displayValue[10];
@@ -64,22 +64,35 @@ struct ada7seg_state {
 		while (*outb)
 		{
 			int idx = i>1?i+1:i;
-			if (*outb == ' ')
-				currentData[idx] = 0;
-			else
-			if (*outb == '-')
-				currentData[idx] = 0x40;
-			else
-			if ((*outb >= '0') && (*outb <= '9'))
-			{	
-				currentData[idx] = displayValue[*outb-'0'];
+			switch(*outb)
+			{
+				case ' ': currentData[idx] = 0; break;
+				case '-': currentData[idx] = 64; break;
+				case 'A': currentData[idx] = 119; break;
+				case 'b': currentData[idx] = 124; break;
+				case 'C': currentData[idx] = 57; break;
+				case 'd': currentData[idx] = 94; break;
+				case 'E': currentData[idx] = 121; break;
+				case 'F': currentData[idx] = 113; break;
+				case 'G': currentData[idx] = 61; break;
+				case 'H': currentData[idx] = 118; break;
+				case 'I': currentData[idx] = 6; break;
+				case 'J': currentData[idx] = 30; break;
+				case 'L': currentData[idx] = 56; break;
+				case 'P': currentData[idx] = 115; break;
+				case 'S': currentData[idx] = 109; break;
+				case 'U': currentData[idx] = 62; break;
+				case 'y': currentData[idx] = 110; break;
+				default:
+					if ((*outb >= '0') && (*outb <= '9'))
+					{	
+						currentData[idx] = displayValue[*outb-'0'];
+					}
+					break;
 			}
+			//LogTextMessage("%d %d", idx, currentData[idx]);
 			i++;
 			outb++;
-		}
-		if (hasPrefix)
-		{
-			currentData[0] = prefixValue;
 		}
 		hasNewValue = true;	
 	}
@@ -215,59 +228,19 @@ void initDisplayData()
 }
 
 
-void int2a(int num, char* str, int pad)
-{
-    bool isNegative = false;
-    if (num == 0)
-    {
-    		for (auto i=0; i < pad-1; ++i)
-    		{
-    			str[i] = ' ';
-    		}
-        str[pad-1] = '0';
-        str[pad] = 0;
-        return;
-    }
-    if (num < 0)
-    {
-        isNegative = true;
-        num = -num;
-    }
-    char outb[16];
-
-    int idx = 15;
-    int w = 0;
-    while (num != 0)
-    {
-        int rem = num % 10;
-        outb[idx--] = (rem > 9)? (rem-10) + 'a' : rem + '0';
-        num = num/10;
-        w++;
-    }
-    if (isNegative)
-    {
-        outb[idx--] = '-';
-        w++;
-    }
-    while (w < pad)
-    {
-    	   w++;
-    	   *str++ = ' ';
-    }
-    while (++idx < 16)
-    {
-        *str++=outb[idx];
-    }
-    *str = 0;
-}
-
-
 void setNewIntValue(int val)
 {
 	char outb[16];
-	int w = ada7seg_state.hasPrefix?3:4;
-	int2a(val, outb, w);
-	ada7seg_state.setNewValues(outb, ada7seg_state.hasPrefix?1:0);
+	ada7seg_state.value = val;
+	if (ada7seg_state.hasPrefix)
+	{
+		chsnprintf(outb, sizeof(outb), "%c%3d", ada7seg_state.prefix, val);
+	}
+	else
+	{
+		chsnprintf(outb, sizeof(outb), "%4d", val);
+	}
+	ada7seg_state.setNewValues(outb, 0);	
 }
 
 
@@ -280,9 +253,9 @@ void setPrefix(int val)
     else 
     {
     	  ada7seg_state.hasPrefix = true;
-    	  ada7seg_state.prefixValue = val;
-	  ada7seg_state.setDirectValue(0, val);
+    	  ada7seg_state.prefix = val;
     }
+    setNewIntValue(ada7seg_state.value);
 }]]></code.declaration>
          <code.init><![CDATA[ada7seg_init(&ada7seg_state);
 
@@ -337,9 +310,9 @@ if (prevPrefix != inlet_prefixCharacter)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>782</x>
-      <y>415</y>
-      <width>651</width>
-      <height>354</height>
+      <x>720</x>
+      <y>23</y>
+      <width>720</width>
+      <height>439</height>
    </windowPos>
 </patch-1.0>

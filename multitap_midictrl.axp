@@ -112,10 +112,6 @@ else
 	outlet_out = 0;]]></code.srate>
       </object>
    </patchobj>
-   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="294" y="112">
-      <params/>
-      <attribs/>
-   </obj>
    <obj type="trisfreq" uuid="8fd80ca6-c40c-4640-97fb-0a6dfb1c28cc" name="trisfreq_1" x="868" y="126">
       <params/>
       <attribs/>
@@ -272,6 +268,9 @@ disp_d2 = outlet_tap1;]]></code.krate>
             <int32 name="level3"/>
             <int32 name="level4"/>
             <int32 name="levelmain"/>
+            <bool32 name="load"/>
+            <bool32 name="save"/>
+            <int32 name="patchnr"/>
          </inlets>
          <outlets>
             <frac32 name="pitch1"/>
@@ -313,29 +312,88 @@ int inQueue = 0;
 uint8_t midiQueue[1024]; // we need quite a lot because setting all APC key25 values are 53 values
 const int32_t gainValues[4] = {float_to_q27(0.0),float_to_q27(0.5),float_to_q27(0.75),float_to_q27(0.999)}; 
 const int32_t fdbkValues[4] = {float_to_q27(0.0),float_to_q27(0.9),float_to_q27(0.97),float_to_q27(0.99)}; 
-int32_t pitchValue[4] = {(-12)<<21,0<<21, 7 << 21, 12<<21};
-int32_t combGainValue[4] =  {float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0), float_to_q27(1.0)};
-int32_t combFeedbackValue[4]={float_to_q27(0.9), float_to_q27(0.95), float_to_q27(0.9), float_to_q27(0.9)};
-int32_t ringGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9)};
-int32_t vcfGainValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9), float_to_q27(0.0)};
-int32_t vcfQValue[4]={float_to_q27(0.0), float_to_q27(0.0), float_to_q27(0.9), float_to_q27(0.0)};
-int32_t outGain[4] = {float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999)};
 
-int8_t combGainSet[4] = {3,3,3,3};
-int8_t combFdbkSet[4] = {2,2,2,2};
-int8_t combRingSet[4] = {0,0,0,1};
-int8_t combVcfSet[4] = {0,0,1,0};
+int32_t lastLevel[5] = {0,0,0,0,0};
+
+struct Settings
+{
+	int8_t combGain[4]; // logic level (off, 1, 2, 3=max)
+	int32_t combGainValue[4]; // dsp level 
+	int8_t ringGain[4];
+	int32_t ringGainValue[4];
+	int8_t vcfGain[4];
+	int32_t vcfGainValue[4];
+	int32_t outGain[4];
+	int32_t pitchValue[4];
+	int32_t combFeedbackLevel;
+	int32_t mixLevel;
+} settings = {
+	{3,3,3,3},
+	{float_to_q27(0.999), float_to_q27(0.999), float_to_q27(0.999), float_to_q27(0.999)},
+	{2,2,2,2},
+	{float_to_q27(0.75), float_to_q27(0.75), float_to_q27(0.75), float_to_q27(0.75)},
+	{0,0,0,0},
+	{float_to_q27(0.0),float_to_q27(0.0),float_to_q27(0.0),float_to_q27(0.0)},
+	{float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999)},
+	{(-12)<<21,0<<21, 7 << 21, 12<<21},
+	float_to_q27(0.0),
+	float_to_q27(0.5)};
 
 int programmingTone = -1;
 
 
+void saveDataBlock(FIL &file, const void *data, int size, char *filename)
+{
+    FRESULT err;
+    UINT bytes_written;
+    err = f_write(&file, data, size,&bytes_written);
+    if (err != FR_OK) report_fatfs_error(err,filename);
+}
+
+void loadDataBlock(FIL &file, void *data, int size, char *filename)
+{
+    FRESULT err;
+    UINT bytes_read;
+    err = f_read(&file, data, size,&bytes_read);
+    if (err != FR_OK) report_fatfs_error(err,filename);
+}
+void savePatch(int nr)
+{
+    char filename[128];
+    chsnprintf(filename, sizeof(filename), "patch_%03d.bin", nr); 
+    LogTextMessage("saving to %s", filename);
+    FIL FileObject;
+    FRESULT err;
+    UINT bytes_written;
+    codec_clearbuffer();
+    err = f_open(&FileObject, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    if (err != FR_OK) {report_fatfs_error(err,filename); return;}
+    saveDataBlock(FileObject, (void *)&settings, sizeof(settings),filename);
+    err = f_close(&FileObject);
+    if (err != FR_OK) report_fatfs_error(err,filename);
+}
+
+void loadPatch(int nr)
+{
+    char filename[128];
+    chsnprintf(filename, sizeof(filename), "patch_%03d.bin", nr); 
+    LogTextMessage("saving to %s", filename);
+    FIL FileObject;
+    FRESULT err;
+    UINT bytes_written;
+    codec_clearbuffer();
+    err = f_open(&FileObject, filename, FA_READ | FA_OPEN_EXISTING);
+    if (err != FR_OK) {report_fatfs_error(err,filename); return;}
+    loadDataBlock(FileObject,  (void *)&settings, sizeof(settings),filename);
+    err = f_close(&FileObject);
+    if (err != FR_OK) report_fatfs_error(err,filename);	
+    setStatus();
+}
 
 const int cursorKeyIndex = 40;
 const int sceneKeyIndex = 48;
 const int cursorKeysNote = 64;
 const int sceneKeysNote = 82;
-int32_t lastLevel[5] = {0,0,0,0,0};
-int32_t mixLevel = float_to_q27(0.5);
 
 
 
@@ -360,12 +418,9 @@ void setStatus()
 {
 	for (int c=0; c < 4; ++c)
 	{
-		auto value = ledLevel(combGainValue[c]);
-		setMatrixChannelValue(c,0,value);
-		value = ledLevel(ringGainValue[c]);
-		setMatrixChannelValue(c,1,value);
-		value = ledLevel(vcfGainValue[c]);
-		setMatrixChannelValue(c,2,value);
+		setMatrixChannelValue(c,0,settings.combGain[c]);
+		setMatrixChannelValue(c,1,settings.ringGain[c]);
+		setMatrixChannelValue(c,2,settings.vcfGain[c]);
 	}
 }
 
@@ -526,23 +581,23 @@ void setTrisValue(int row, int channel)
 {
 	switch(row)
 	{
-		case 0:combGainSet[channel]++; 
-			if (combGainSet[channel] >=4)
-				combGainSet[channel] = 0;
-			combGainValue[channel] = gainValues[combGainSet[channel]];
-			LogTextMessage("Gain comb %d %d", channel, combGainValue[channel]);
+		case 0:settings.combGain[channel]++; 
+			if (settings.combGain[channel] >=4)
+				settings.combGain[channel] = 0;
+			settings.combGainValue[channel] = gainValues[settings.combGain[channel]];
+			LogTextMessage("Gain comb %d %d", channel, settings.combGainValue[channel]);
 			break;
-		case 1:combRingSet[channel]++; 
-			if (combRingSet[channel] >=4)
-				combRingSet[channel] = 0;
-			ringGainValue[channel] = gainValues[combRingSet[channel]];
-			LogTextMessage("Gain ring %d %d", channel, ringGainValue[channel]);
+		case 1:settings.ringGain[channel]++; 
+			if (settings.ringGain[channel] >=4)
+				settings.ringGain[channel] = 0;
+			settings.ringGainValue[channel] = gainValues[settings.ringGain[channel]];
+			LogTextMessage("Gain ring %d %d", channel, settings.ringGainValue[channel]);
 			break;
-		case 2:combVcfSet[channel]++; 
-			if (combVcfSet[channel] >=4)
-				combVcfSet[channel] = 0;
-			vcfGainValue[channel] = gainValues[combVcfSet[channel]];
-			LogTextMessage("Gain vcf %d %d", channel, vcfGainValue[channel]);
+		case 2:settings.vcfGain[channel]++; 
+			if (settings.vcfGain[channel] >=4)
+				settings.vcfGain[channel] = 0;
+			settings.vcfGainValue[channel] = gainValues[settings.vcfGain[channel]];
+			LogTextMessage("Gain vcf %d %d", channel, settings.vcfGainValue[channel]);
 			break;
 	}
 	setStatus();
@@ -552,7 +607,7 @@ void ProgramNote(int height, int velo)
 {
 	if (programmingTone >= 0)
 	{
-		pitchValue[programmingTone] = (height - 64) << 21;
+		settings.pitchValue[programmingTone] = (height - 64) << 21;
 		setProgrammingTone(programmingTone);
 	}
 }
@@ -575,22 +630,19 @@ void setProgrammingTone(int channel)
 
 void SetVolumeLevel(int channel, int level)
 {
-	outGain[channel] = float_to_q27((float)level/128.0);
+	settings.outGain[channel] = float_to_q27((float)level/128.0);
 	//LogTextMessage("%d", outGain[channel]);
 }
 
 void SetCombFeedBack(int level)
 {
-	for (int c=0; c < 4; ++c)
-	{
-		const float c_maxTime = 0.5f;
-		combFeedbackValue[c] = float_to_q27((level-64)/128.0f*c_maxTime);
-	}
+	const float c_maxTime = 0.5f;
+	settings.combFeedbackLevel = float_to_q27((level-64)/128.0f*c_maxTime);
 }
 
 void SetMix(int level)
 {
-     mixLevel = float_to_q27(level/128.0f);
+     settings.mixLevel = float_to_q27(level/128.0f);
 }]]></code.declaration>
          <code.init><![CDATA[SetCombFeedBack(65);
 clearAll(0);
@@ -598,33 +650,43 @@ setStatus();]]></code.init>
          <code.krate><![CDATA[static int countUp=0;
 static int beat = 3000;
 
+if (inlet_save)
+{
+	LogTextMessage("should save patch: %d", inlet_patchnr);
+	savePatch(inlet_patchnr);
+}
+if (inlet_load)
+{
+	LogTextMessage("should load patch: %d", inlet_patchnr);
+	loadPatch(inlet_patchnr);
+}
 
-outlet_pitch1=pitchValue[0];
-outlet_pitch2=pitchValue[1];
-outlet_pitch3=pitchValue[2];
-outlet_pitch4=pitchValue[3];
-outlet_comblevel1=combGainValue[0];
-outlet_comblevel2=combGainValue[1];
-outlet_comblevel3=combGainValue[2];
-outlet_comblevel4=combGainValue[3];
-outlet_combfdbk1=combFeedbackValue[0];
-outlet_combfdbk2=combFeedbackValue[1];
-outlet_combfdbk3=combFeedbackValue[2];
-outlet_combfdbk4=combFeedbackValue[3];
-outlet_ringlevel1=ringGainValue[0];
-outlet_ringlevel2=ringGainValue[1];
-outlet_ringlevel3=ringGainValue[2];
-outlet_ringlevel4=ringGainValue[3];
-outlet_vcflevel1=vcfGainValue[0];
-outlet_vcflevel2=vcfGainValue[1];
-outlet_vcflevel3=vcfGainValue[2];
-outlet_vcflevel4=vcfGainValue[3];
-outlet_level1=outGain[0];
-outlet_level2=outGain[1];
-outlet_level3=outGain[2];
-outlet_level4=outGain[3];
+outlet_pitch1=settings.pitchValue[0];
+outlet_pitch2=settings.pitchValue[1];
+outlet_pitch3=settings.pitchValue[2];
+outlet_pitch4=settings.pitchValue[3];
+outlet_comblevel1=settings.combGainValue[0];
+outlet_comblevel2=settings.combGainValue[1];
+outlet_comblevel3=settings.combGainValue[2];
+outlet_comblevel4=settings.combGainValue[3];
+outlet_combfdbk1=settings.combFeedbackLevel;
+outlet_combfdbk2=settings.combFeedbackLevel;
+outlet_combfdbk3=settings.combFeedbackLevel;
+outlet_combfdbk4=settings.combFeedbackLevel;
+outlet_ringlevel1=settings.ringGainValue[0];
+outlet_ringlevel2=settings.ringGainValue[1];
+outlet_ringlevel3=settings.ringGainValue[2];
+outlet_ringlevel4=settings.ringGainValue[3];
+outlet_vcflevel1=settings.vcfGainValue[0];
+outlet_vcflevel2=settings.vcfGainValue[1];
+outlet_vcflevel3=settings.vcfGainValue[2];
+outlet_vcflevel4=settings.vcfGainValue[3];
+outlet_level1=settings.outGain[0];
+outlet_level2=settings.outGain[1];
+outlet_level3=settings.outGain[2];
+outlet_level4=settings.outGain[3];
 
-outlet_mix=mixLevel;
+outlet_mix=settings.mixLevel;
 
 beat--;
 if (beat <=0)
@@ -969,7 +1031,94 @@ else
 }]]></code.srate>
       </object>
    </patchobj>
-   <obj type="adafruit_4x7segment" uuid="3302313b-737f-4462-ad06-d9c77caabfd0" name="adafruit_4x7segment_1" x="294" y="532">
+   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="196" y="504">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639" name="cc_1" x="98" y="532">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639">
+         <author>JS</author>
+         <license>BSD</license>
+         <helpPatch>midi_in.axh</helpPatch>
+         <inlets/>
+         <outlets>
+            <int32 name="patchnr"/>
+            <int32 name="prefix"/>
+            <bool32 name="save"/>
+            <bool32 name="load"/>
+         </outlets>
+         <displays>
+            <int32.label name="patch"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t patchNumber = 0;
+int32_t ntrig = 0;
+int32_t ntrigSave = 0;
+int32_t ntrigLoad = 0;
+int32_t mode = 'A';]]></code.declaration>
+         <code.krate><![CDATA[outlet_patchnr = patchNumber;
+outlet_prefix = mode;
+outlet_save = ntrigSave;
+disp_patch = patchNumber;
+ntrigSave = 0;
+outlet_load = ntrigLoad;
+ntrigLoad = 0;]]></code.krate>
+         <code.midihandler><![CDATA[LogTextMessage("%02x %d %d", status, data1, data2);
+
+if ((status&0xF0) == MIDI_NOTE_ON) {
+
+	if (data1 == 91) // play/pause
+	{
+		mode = 'L';
+	     ntrigLoad = 1;
+	}
+	if (data1 == 93) // rec
+	{
+		mode = 'S';
+	     ntrigSave = 1;
+	}
+ if (data1 == 64) 
+ {
+ 	mode = 'P';
+ 	patchNumber--;
+ 	if (patchNumber < 0)
+ 		patchNumber = 99;
+ }
+ if (data1 == 65) 
+ {
+     mode = 'P';
+ 	patchNumber++;
+ 	if (patchNumber > 99)
+ 		patchNumber = 0;
+ }
+ if (data1 == 66) 
+ {
+     mode = 'P';
+ 	if (patchNumber % 10 == 0)
+	 	patchNumber-=10;
+     else
+	 	patchNumber -= patchNumber % 10;
+ 	if (patchNumber < 0)
+ 		patchNumber = 99;
+ }
+ if (data1 == 67) 
+ {
+     mode = 'P';
+	if (patchNumber % 10 == 0)
+	 	patchNumber+=10;
+     else
+	 	patchNumber += 10-patchNumber % 10;
+ 	if (patchNumber > 99)
+ 		patchNumber = 0;
+ }
+}]]></code.midihandler>
+      </object>
+   </patchobj>
+   <obj type="adafruit_4x7segment" uuid="fc1f3814-2f99-4040-8646-680a589e7f93" name="adafruit_4x7segment_1" x="294" y="532">
       <params/>
       <attribs/>
    </obj>
@@ -1026,67 +1175,6 @@ else
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639" name="cc_1" x="98" y="574">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639">
-         <author>JS</author>
-         <license>BSD</license>
-         <helpPatch>midi_in.axh</helpPatch>
-         <inlets/>
-         <outlets>
-            <int32 name="patchnr"/>
-            <bool32 name="trig"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.declaration><![CDATA[int32_t patchNumber;
-int32_t ntrig;]]></code.declaration>
-         <code.init><![CDATA[patchNumber = 0;
-ntrig = 0;]]></code.init>
-         <code.krate><![CDATA[outlet_patchnr = patchNumber;
-outlet_trig = ntrig;
-ntrig = 0;]]></code.krate>
-         <code.midihandler><![CDATA[if ((status&0xF0) == MIDI_NOTE_ON) {
- if (data1 == 64) 
- {
- 	patchNumber--;
- 	if (patchNumber < 0)
- 		patchNumber = 99;
-     ntrig = 1;
- }
- if (data1 == 65) 
- {
- 	patchNumber++;
- 	if (patchNumber > 99)
- 		patchNumber = 0;
-     ntrig = 1;
- }
- if (data1 == 66) 
- {
- 	if (patchNumber % 10 == 0)
-	 	patchNumber-=10;
-     else
-	 	patchNumber -= patchNumber % 10;
- 	if (patchNumber < 0)
- 		patchNumber = 99;
-     ntrig = 1;
- }
- if (data1 == 67) 
- {
- 	if (patchNumber % 10 == 0)
-	 	patchNumber+=10;
-     else
-	 	patchNumber += 10-patchNumber % 10;
- 	if (patchNumber > 99)
- 		patchNumber = 0;
-     ntrig = 1;
- }
-}]]></code.midihandler>
-      </object>
-   </patchobj>
    <patchobj type="patch/object" uuid="9573e655-d971-4527-9d80-16c10dc25fad" name="vu_5" x="448" y="602">
       <params/>
       <attribs/>
@@ -1136,6 +1224,32 @@ else
 }]]></code.srate>
       </object>
    </patchobj>
+   <patchobj type="patch/object" uuid="66bfc0c0-4faf-401f-94e2-0ea73e1b17e4" name="==_1" x="196" y="630">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="66bfc0c0-4faf-401f-94e2-0ea73e1b17e4">
+         <sDescription>test memsize</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets/>
+         <outlets/>
+         <displays>
+            <int32.label name="d1"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes>
+            <include>os/various/chprintf.h</include>
+         </includes>
+         <code.declaration><![CDATA[char lotsofData[100];]]></code.declaration>
+         <code.init><![CDATA[lotsofData[0] = 0;
+chsnprintf(lotsofData,100, "chsnprintf %4.3f %4d",123.45678f,-42);
+LogTextMessage("'%s'", lotsofData);]]></code.init>
+         <code.krate><![CDATA[disp_d1 = lotsofData[0];]]></code.krate>
+         <code.midihandler><![CDATA[lotsofData[0] = status;]]></code.midihandler>
+      </object>
+   </patchobj>
    <nets>
       <net>
          <source obj="kticks2sec_1" outlet="samplesTotal"/>
@@ -1143,8 +1257,8 @@ else
       </net>
       <net>
          <source obj="in_1" outlet="wave"/>
-         <dest obj="gain_1" inlet="in"/>
          <dest obj="mix_3" inlet="in1"/>
+         <dest obj="gain_1" inlet="in"/>
       </net>
       <net>
          <source obj="mix_3" outlet="out"/>
@@ -1372,7 +1486,20 @@ else
       </net>
       <net>
          <source obj="cc_1" outlet="patchnr"/>
+         <dest obj="midihandler" inlet="patchnr"/>
          <dest obj="adafruit_4x7segment_1" inlet="intvalue"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="prefix"/>
+         <dest obj="adafruit_4x7segment_1" inlet="prefix"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="save"/>
+         <dest obj="midihandler" inlet="save"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="load"/>
+         <dest obj="midihandler" inlet="load"/>
       </net>
    </nets>
    <settings>
@@ -1384,11 +1511,28 @@ else
       <NModulationTargetsPerSource>8</NModulationTargetsPerSource>
       <License>GPL</License>
    </settings>
-   <notes><![CDATA[]]></notes>
+   <notes><![CDATA[A 119
+b 124
+C 57
+d 94
+E 121
+F 113
+G 61
+H 118
+J 30
+L 56
+P 115
+S 109
+U 62
+y 110
+degree 99
+
+
+]]></notes>
    <windowPos>
-      <x>166</x>
+      <x>629</x>
       <y>23</y>
-      <width>1185</width>
+      <width>811</width>
       <height>877</height>
    </windowPos>
 </patch-1.0>
