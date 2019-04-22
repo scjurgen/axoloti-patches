@@ -35,11 +35,11 @@ void calcFeedBack(int32_t width)
      float p = 48000.0f/width*t;
 	if (t >=0)
 	{
-     	fdbk_gain = float_to_q27(powf(10.0f, (1.0f / p * log(0.5f))));
+     	fdbk_gain = float_to_q27(powf(10.0f, (1.0f / p * log(0.333f))));
 	}
 	else
 	{
-     	fdbk_gain = float_to_q27(-powf(10.0f, (1.0f / -p * log(0.5f))));
+     	fdbk_gain = float_to_q27(-powf(10.0f, (1.0f / -p * log(0.333f))));
 	}
 	if (fdbk_gain > 0)
 		totalGain = (1<<27) - fdbk_gain/2;
@@ -172,7 +172,6 @@ outlet_wave= (r>>4);]]></code.srate>
             <frac32 name="gain1"/>
             <frac32 name="gain2"/>
             <frac32 name="gain3"/>
-            <frac32 name="outgain"/>
          </inlets>
          <outlets>
             <frac32buffer name="out" description="mix out"/>
@@ -197,7 +196,6 @@ if (inlet_gain3 != lastGain[2])
          <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,inlet_gain1 << 4);
 accum = ___SMMLA(inlet_in2,inlet_gain2 << 4,accum);
 accum = ___SMMLA(inlet_in3,inlet_gain3 << 4,accum);
-accum = ___SMMUL(accum<<2, inlet_outgain<<3);
 outlet_out = accum;]]></code.srate>
       </object>
    </patchobj>
@@ -209,9 +207,9 @@ outlet_out = accum;]]></code.srate>
       <params/>
       <attribs/>
    </obj>
-   <patcher type="patch/patcher" uuid="3b4d9bac-577c-44cb-9694-23b4ed6c38ce" name="obj_1" x="322" y="392">
+   <patcher type="patch/patcher" uuid="1ed75abd-54f4-4ab4-ad00-2c66c9c5d00b" name="obj_1" x="322" y="392">
       <params>
-         <frac32.u.map name="vcf3_1:reso" value="31.0"/>
+         <frac32.u.map name="vcf3_1:reso" value="0.0"/>
       </params>
       <attribs/>
       <subpatch appVersion="1.0.12">
@@ -330,10 +328,6 @@ outlet_out = accum;]]></code.srate>
       <params/>
       <attribs/>
    </obj>
-   <obj type="patch/inlet f" uuid="5c585d2dcd9c05631e345ac09626a22a639d7c13" name="outgain" x="14" y="574">
-      <params/>
-      <attribs/>
-   </obj>
    <nets>
       <net>
          <source obj="audioin" outlet="inlet"/>
@@ -391,17 +385,13 @@ outlet_out = accum;]]></code.srate>
          <source obj="mix_1" outlet="out"/>
          <dest obj="outlet_1" inlet="outlet"/>
       </net>
-      <net>
-         <source obj="outgain" outlet="inlet"/>
-         <dest obj="mix_1" inlet="outgain"/>
-      </net>
    </nets>
    <settings>
       <subpatchmode>no</subpatchmode>
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>343</x>
+      <x>331</x>
       <y>23</y>
       <width>1109</width>
       <height>766</height>

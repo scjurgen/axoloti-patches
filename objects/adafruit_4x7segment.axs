@@ -96,6 +96,15 @@ struct ada7seg_state {
 		}
 		hasNewValue = true;	
 	}
+
+	void setDoubleDot(bool isOn)
+	{
+		if (isOn)
+			currentData[2] = 2;
+		else
+			currentData[2] = 0;
+		hasNewValue = true;	
+	}
 };
 
 static void *ada7seg_malloc(size_t size) {
@@ -172,7 +181,7 @@ static THD_FUNCTION(ada7seg_thread, arg) {
 		ada7seg_error(s, "i2c error");
 		goto exit;
 	}
-	ada7seg_wr8(s, BRIGHTNESS+5);
+	ada7seg_wr8(s, BRIGHTNESS+8);
 	ada7seg_wr8(s, DISPLAY_ON);
 	for (auto i=0; i < 5; ++i)
 	{
@@ -243,6 +252,10 @@ void setNewIntValue(int val)
 	ada7seg_state.setNewValues(outb, 0);	
 }
 
+void setDoubleDot(int val)
+{
+	ada7seg_state.setDoubleDot(val);
+}
 
 void setPrefix(int val)
 {
@@ -275,6 +288,12 @@ if (prevPrefix != inlet_prefixCharacter)
 {
 	prevPrefix = inlet_prefixCharacter;
 	setPrefix(prevPrefix);
+}
+
+if (prevDblDot != inlet_dbldot)
+{
+	prevDblDot = inlet_dbldot;
+	setDoubleDot(inlet_dbldot);
 }]]></code.krate>
       </object>
    </patchobj>
@@ -310,8 +329,8 @@ if (prevPrefix != inlet_prefixCharacter)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>720</x>
-      <y>23</y>
+      <x>619</x>
+      <y>435</y>
       <width>720</width>
       <height>439</height>
    </windowPos>
