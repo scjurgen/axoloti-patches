@@ -1,0 +1,436 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="audio/inconfig" uuid="9a80ef3c19f2a8f81da3a3b7c1c44d18126b97d9" name="inconfig_1" x="42" y="28">
+      <params/>
+      <attribs>
+         <combo attributeName="gain" selection="-3dB"/>
+         <combo attributeName="boost" selection="20dB"/>
+         <combo attributeName="mode" selection="Mono(L)"/>
+      </attribs>
+   </obj>
+   <obj type="mix/mix 1 g" uuid="e6982841c1bf323ee2062a4b6cc2737adafbd668" name="mix_1" x="700" y="28">
+      <params>
+         <frac32.u.map name="gain1" value="64.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="980" y="28">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-18dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="14" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="3e93f6b7-66b4-4919-a860-47de83f239b1" name="xfade_1" x="560" y="154">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="3e93f6b7-66b4-4919-a860-47de83f239b1">
+         <sDescription>crossfade between two inputs</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="i1" description="input"/>
+            <frac32buffer name="i2" description="input"/>
+            <bool32 name="pan"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="o" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t fade=0;
+int32_t last_pan=0;]]></code.declaration>
+         <code.krate><![CDATA[if (inlet_pan != last_pan)
+{
+	last_pan = inlet_pan;
+}]]></code.krate>
+         <code.srate><![CDATA[outlet_o = inlet_i1/100 * fade + inlet_i2/100*(100-fade);
+
+if (last_pan)
+{
+	if (fade > 0)
+		fade--;
+}
+else
+{
+	if (fade < 100)
+		fade++;
+}]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="84d721fa-8090-47b8-8f63-6969f8600825" name="vcf3_1" x="392" y="168">
+      <params>
+         <frac32.s.map name="pitch" value="-7.0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="84d721fa-8090-47b8-8f63-6969f8600825">
+         <sDescription>2-pole resonant low-pass filter (biquad), filter updated at k-rate</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>filter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="filter input"/>
+            <frac32 name="pitch" description="pitch"/>
+            <frac32 name="reso" description="filter resonance"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="filter output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.s.map name="pitch"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[data_filter_biquad_A fd, fd2;]]></code.declaration>
+         <code.init><![CDATA[init_filter_biquad_A(&fd);
+  init_filter_biquad_A(&fd2);]]></code.init>
+         <code.krate><![CDATA[{
+      int32_t freq;
+      int32_t tempScaled[16];
+      int32_t temp[16];
+      MTOF(param_pitch + inlet_pitch,freq);
+	 static int32_t oldReso=-1;
+	 static float scale = 1.0;
+	 if (inlet_reso != oldReso)
+	 {
+	 	scale = powf(1.0-q27_to_float(inlet_reso),0.3);
+//	 	scale=0.01f;
+	     oldReso = inlet_reso;
+	     LogTextMessage("%08x %f %f", oldReso, q27_to_float(oldReso), scale); 
+	 }
+      for (int i=0; i < BUFSIZE; ++i)
+      {
+      	tempScaled[i] =  inlet_in[i]*scale;
+      }
+      f_filter_biquad_A(&fd, tempScaled, temp, freq,INT_MAX - (__USAT(inlet_reso,27)<<4));
+      f_filter_biquad_A(&fd2,temp, outlet_out,freq,INT_MAX - (__USAT(inlet_reso,27)<<4));
+   }]]></code.krate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d" name="gain_1" x="168" y="182">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d">
+         <sDescription>on/off switch</sDescription>
+         <author>Juergen Schwietering</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in"/>
+            <bool32 name="onoff"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="output"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.srate><![CDATA[if (inlet_onoff)
+	outlet_out = inlet_in/4;
+else
+	outlet_out = 0;]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="TSG/fx/reverb" uuid="dc194a62-69b1-4fce-b3e8-2c03802fed89" name="obj_1" x="840" y="182">
+      <params>
+         <frac32.u.map name="PreDelay" value="0.0"/>
+         <frac32.u.map name="decay" value="39.5"/>
+         <frac32.u.map name="LowDamp" value="27.5"/>
+         <frac32.u.map name="HighDamp" value="20.5"/>
+         <frac32.u.map name="size" value="46.0"/>
+         <frac32.s.map name="mod_:pitch" value="-21.0"/>
+         <frac32.u.map name="mod_:gain" value="7.0"/>
+         <frac32.u.map name="diffusion" value="53.0"/>
+         <frac32.u.map name="mix" value="16.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="952" y="182">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/toggle" uuid="42b8134fa729d54bfc8d62d6ef3fa99498c1de99" name="toggle_3" x="14" y="224">
+      <params>
+         <bool32.tgl name="b" value="1"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="disp/vu" uuid="6899a21ca2efcb3f63aa03ed7f61b5fe5a92e871" name="vu_2" x="574" y="308">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="16fff4e8-6a8d-4f50-87b5-eca8fbd22109" name="object_1" x="112" y="322">
+      <params>
+         <int32 name="bpm" value="92"/>
+         <int32 name="div" value="2"/>
+         <int32 name="range" value="12"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="16fff4e8-6a8d-4f50-87b5-eca8fbd22109">
+         <sDescription></sDescription>
+         <inlets/>
+         <outlets>
+            <frac32 name="pitch1"/>
+            <frac32 name="pitch2"/>
+            <bool32 name="pan"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="bpm">
+               <MinValue i="60"/>
+               <MaxValue i="200"/>
+            </int32>
+            <int32 name="div">
+               <MinValue i="1"/>
+               <MaxValue i="4"/>
+            </int32>
+            <int32 name="range">
+               <MinValue i="1"/>
+               <MaxValue i="48"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int32_t kRateSwitch = 0;
+float currentPitch[2] = {0,0};
+bool pan = false;
+int stateMachineStep = 0;
+
+int initialize = 0;
+int queueHead = 0;
+int queueTail = 0;
+int inQueue = 0;
+uint8_t midiQueue[1024];
+
+
+const int cursorKeyIndex = 40;
+const int sceneKeyIndex = 48;
+const int cursorKeysNote = 64;
+const int sceneKeysNote = 82;
+
+void feedQueue(uint8_t value)
+{
+	inQueue++;
+	midiQueue[queueHead++] = value;
+	if (queueHead >= sizeof(midiQueue)/sizeof(midiQueue[0]))
+		queueHead = 0;	
+}
+
+int countFood() 
+{
+	return inQueue;
+}
+
+uint8_t eatQueue()
+{
+	auto value = midiQueue[queueTail++];
+	if (queueTail >= sizeof(midiQueue)/sizeof(midiQueue[0]))
+		queueTail = 0;	
+	inQueue--;
+	return value;
+}
+
+void AddMidiMessage(uint8_t status, uint8_t data1, uint8_t data2)
+{
+	feedQueue(status);
+	feedQueue(data1);
+	feedQueue(data2);
+}]]></code.declaration>
+         <code.krate><![CDATA[kRateSwitch--;
+if (kRateSwitch <= 0)
+{
+	kRateSwitch = (60000*3/param_bpm/2)>>param_div;
+
+	stateMachineStep++;
+	stateMachineStep &= 0x03;
+	switch (stateMachineStep)
+	{
+		case 0: currentPitch[0] = (float)rand()/RAND_MAX*param_range/64.0f; 
+			break;
+		case 1: pan = false; 
+			AddMidiMessage(0x90,0,1);
+			AddMidiMessage(0x90,1,0);
+			break;
+		case 2: currentPitch[1] = (float)rand()/RAND_MAX*param_range/64.0f; 
+			break;
+		case 3: pan = true; 
+               AddMidiMessage(0x90,0,0);
+               AddMidiMessage(0x90,1,1);
+               break;
+	}
+	// LogTextMessage("%d %f %f", pan, currentPitch[0], currentPitch[1]);
+}
+outlet_pan = pan;
+outlet_pitch1 = float_to_q27(currentPitch[0]);
+outlet_pitch2 = float_to_q27(currentPitch[1]);
+
+auto foodCnt = countFood();
+
+if (foodCnt)
+{
+	auto len = MidiGetOutputBufferAvailable(MIDI_DEVICE_USB_HOST);
+	//LogTextMessage("food: %d, midilen %d", countFood(), len);
+	if (len >= 3)
+	{
+		auto status = eatQueue();
+		uint8_t value2, value3;
+		switch(status & 0xF0)
+		{
+			case 0x80:
+			case 0x90:
+			case 0xA0:
+			case 0xB0:
+			case 0xE0:
+				value2 = eatQueue();
+				value3 = eatQueue();
+				MidiSend3(MIDI_DEVICE_USB_HOST, 1, status, value2, value3); 
+				break;
+			case 0xC0:
+			case 0xD0:
+				value2 = eatQueue();
+				MidiSend2(MIDI_DEVICE_USB_HOST, 1, status, value2); 
+				break;
+			
+		}
+	}
+}]]></code.krate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="84d721fa-8090-47b8-8f63-6969f8600825" name="vcf3_2" x="392" y="322">
+      <params>
+         <frac32.s.map name="pitch" value="5.0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="84d721fa-8090-47b8-8f63-6969f8600825">
+         <sDescription>2-pole resonant low-pass filter (biquad), filter updated at k-rate</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>filter.axh</helpPatch>
+         <inlets>
+            <frac32buffer name="in" description="filter input"/>
+            <frac32 name="pitch" description="pitch"/>
+            <frac32 name="reso" description="filter resonance"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="filter output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.s.map name="pitch"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[data_filter_biquad_A fd, fd2;]]></code.declaration>
+         <code.init><![CDATA[init_filter_biquad_A(&fd);
+  init_filter_biquad_A(&fd2);]]></code.init>
+         <code.krate><![CDATA[{
+      int32_t freq;
+      int32_t tempScaled[16];
+      int32_t temp[16];
+      MTOF(param_pitch + inlet_pitch,freq);
+	 static int32_t oldReso=-1;
+	 static float scale = 1.0;
+	 if (inlet_reso != oldReso)
+	 {
+	 	scale = powf(1.0-q27_to_float(inlet_reso),0.3);
+	 	//scale=0.01f;
+	     oldReso = inlet_reso;
+	     LogTextMessage("%08x %f %f", oldReso, q27_to_float(oldReso), scale); 
+	 }
+      for (int i=0; i < BUFSIZE; ++i)
+      {
+      	tempScaled[i] =  inlet_in[i]*scale;
+      }
+      f_filter_biquad_A(&fd, tempScaled, temp, freq,INT_MAX - (__USAT(inlet_reso,27)<<4));
+      f_filter_biquad_A(&fd2,temp, outlet_out,freq,INT_MAX - (__USAT(inlet_reso,27)<<4));
+   }]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="disp/vu" uuid="6899a21ca2efcb3f63aa03ed7f61b5fe5a92e871" name="vu_1" x="574" y="364">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="dial_2" x="238" y="532">
+      <params>
+         <frac32.u.map name="value" value="59.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="in_1" outlet="wave"/>
+         <dest obj="gain_1" inlet="in"/>
+         <dest obj="mix_1" inlet="bus_in"/>
+      </net>
+      <net>
+         <source obj="toggle_3" outlet="o"/>
+         <dest obj="gain_1" inlet="onoff"/>
+      </net>
+      <net>
+         <source obj="obj_1" outlet="l"/>
+         <dest obj="out_1" inlet="left"/>
+      </net>
+      <net>
+         <source obj="obj_1" outlet="r"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="pitch1"/>
+         <dest obj="vcf3_1" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="pan"/>
+         <dest obj="xfade_1" inlet="pan"/>
+      </net>
+      <net>
+         <source obj="vcf3_1" outlet="out"/>
+         <dest obj="xfade_1" inlet="i1"/>
+         <dest obj="vu_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="mix_1" outlet="out"/>
+         <dest obj="obj_1" inlet="InL"/>
+         <dest obj="obj_1" inlet="InR"/>
+      </net>
+      <net>
+         <source obj="xfade_1" outlet="o"/>
+         <dest obj="mix_1" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="gain_1" outlet="out"/>
+         <dest obj="vcf3_1" inlet="in"/>
+         <dest obj="vcf3_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="vcf3_2" outlet="out"/>
+         <dest obj="xfade_1" inlet="i2"/>
+         <dest obj="vu_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="dial_2" outlet="out"/>
+         <dest obj="vcf3_1" inlet="reso"/>
+         <dest obj="vcf3_2" inlet="reso"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="pitch2"/>
+         <dest obj="vcf3_2" inlet="pitch"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>289</x>
+      <y>95</y>
+      <width>1301</width>
+      <height>835</height>
+   </windowPos>
+</patch-1.0>

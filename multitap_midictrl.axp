@@ -14,29 +14,14 @@
          <combo attributeName="mode" selection="Mono(L)"/>
       </attribs>
    </obj>
-   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_1" x="126" y="14">
-      <params/>
-      <attribs>
-         <combo attributeName="pad" selection="PB0"/>
-         <combo attributeName="mode" selection="pullup"/>
-      </attribs>
-   </obj>
-   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_1" x="224" y="14">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="gpio/out/led2" uuid="3d7a4c75d1f9901181a17ba5de752782de911803" name="led2_1" x="294" y="14">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_2" x="392" y="14">
+   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_2" x="140" y="28">
       <params/>
       <attribs>
          <combo attributeName="pad" selection="PB1"/>
          <combo attributeName="mode" selection="pullup"/>
       </attribs>
    </obj>
-   <patchobj type="patch/object" uuid="5b7c124c-4176-4250-97f1-d00a76b02a60" name="toggle_2" x="504" y="14">
+   <patchobj type="patch/object" uuid="5b7c124c-4176-4250-97f1-d00a76b02a60" name="toggle_2" x="252" y="28">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="5b7c124c-4176-4250-97f1-d00a76b02a60">
@@ -65,15 +50,85 @@ outlet_o= op;
 ]]></code.krate>
       </object>
    </patchobj>
-   <obj type="gpio/out/led1" uuid="c6679540460d64e2e71760e61cb82fac227e2764" name="led1_1" x="644" y="14">
+   <obj type="gpio/out/led1" uuid="c6679540460d64e2e71760e61cb82fac227e2764" name="led1_1" x="336" y="28">
       <params/>
       <attribs/>
    </obj>
+   <patchobj type="patch/object" uuid="15030f3f-b393-4849-97ae-b04525e42160" name="object_2" x="490" y="42">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="15030f3f-b393-4849-97ae-b04525e42160">
+         <inlets/>
+         <outlets/>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.init><![CDATA[LogTextMessage("%d", sdram_get_free());]]></code.init>
+      </object>
+   </patchobj>
    <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="0" y="98">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d" name="gain_1" x="84" y="98">
+   <obj type="trisfreq" uuid="b1ade4b7-4989-45c3-b883-e45b35e7865f" name="trisfreq_1" x="868" y="126">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e" name="mix_2" x="1008" y="126">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e">
+         <sDescription>4 input</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="in1" description="input 1"/>
+            <frac32buffer name="in2" description="input 2"/>
+            <frac32buffer name="in3" description="input 3"/>
+            <frac32buffer name="in4" description="input 4"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="mix out"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.srate><![CDATA[outlet_out = inlet_in1+inlet_in2+inlet_in3+inlet_in4;]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826" name="mix_3" x="1204" y="126">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826">
+         <sDescription>2 input s-rate mixer, shows gain units</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="in1" description="input 1"/>
+            <frac32buffer name="in2" description="input 2"/>
+            <frac32 name="mix" description="mix value "/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="mix out"/>
+         </outlets>
+         <displays>
+            <int32.label name="mix"/>
+         </displays>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[disp_mix = inlet_mix;]]></code.krate>
+         <code.srate><![CDATA[outlet_out = (___SMMUL(inlet_in2<<2, inlet_mix<<3)) +
+(___SMMUL(inlet_in1<<2, ((1<<27)-inlet_mix)<<3));]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1288" y="126">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d" name="gain_1" x="84" y="154">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="c089863e-a202-47fd-8e91-690be549a54d">
@@ -98,11 +153,15 @@ else
 	outlet_out = 0;]]></code.srate>
       </object>
    </patchobj>
-   <patchobj type="patch/object" uuid="5a1adc95-6044-41b4-86c3-e9e98cec1f1d" name="mix_1" x="182" y="98">
+   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="1092" y="154">
+      <params>
+         <frac32.s.map name="freq" value="50.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="5a1adc95-6044-41b4-86c3-e9e98cec1f1d" name="mix_1" x="196" y="168">
       <params>
          <frac32.u.map name="gain1" value="64.0"/>
-         <frac32.u.map name="gain2" value="25.0"/>
-         <frac32.u.map name="gain3" value="0.0"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="5a1adc95-6044-41b4-86c3-e9e98cec1f1d">
@@ -113,6 +172,8 @@ else
             <frac32buffer name="in1" description="input 1"/>
             <frac32buffer name="in2" description="input 2"/>
             <frac32buffer name="in3" description="input 3"/>
+            <frac32 name="gain2"/>
+            <frac32 name="gain3"/>
          </inlets>
          <outlets>
             <frac32buffer name="out" description="mix out"/>
@@ -122,25 +183,20 @@ else
             <frac32.u.map.gain name="gain1">
                <DefaultValue v="32.0"/>
             </frac32.u.map.gain>
-            <frac32.u.map.gain name="gain2">
-               <DefaultValue v="32.0"/>
-            </frac32.u.map.gain>
-            <frac32.u.map.gain name="gain3">
-               <DefaultValue v="32.0"/>
-            </frac32.u.map.gain>
          </params>
          <attribs/>
          <includes/>
-         <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1,param_gain1);
-accum = ___SMMLA(inlet_in2,param_gain2,accum);
-accum = ___SMMLA(inlet_in3,param_gain3,accum);
+         <code.krate><![CDATA[// disp_gain2 = inlet_gain2;]]></code.krate>
+         <code.srate><![CDATA[int32_t accum = ___SMMUL(inlet_in1, param_gain1);
+accum = ___SMMLA(inlet_in2, inlet_gain2, accum);
+accum = ___SMMLA(inlet_in3, inlet_gain3, accum);
 outlet_out=  __SSAT((accum<<1),28);]]></code.srate>
       </object>
    </patchobj>
-   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="308" y="98">
+   <patchobj type="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6" name="echo_1" x="336" y="168">
       <params/>
       <attribs>
-         <spinner attributeName="maxDelayInSeconds" value="20"/>
+         <spinner attributeName="maxDelayInSeconds" value="60"/>
       </attribs>
       <object id="patch/object" uuid="c39fa438-4480-45cf-b6db-06dd3173bfd6">
          <sDescription>Multitap delay output for sequence style effects</sDescription>
@@ -206,9 +262,13 @@ struct DBLevels
 	}
 } dbLevels[6];]]></code.declaration>
          <code.init><![CDATA[static int16_t _delay[attr_maxDelayInSeconds*48000] __attribute__ ((section (".sdram")));
+
+LogTextMessage("%3.2fMb allocated", sizeof(_delay)/1024.0f/1024.0f);
+LogTextMessage("%d", sdram_get_free());
+
 delayline = &_delay[0];
 
-for (auto i=0; i < sizeof(_delay); ++i)
+for (int32_t i=0; i < sizeof(_delay)/sizeof(_delay[0]); ++i)
 {
    delayline[i] = 0;
 }
@@ -239,10 +299,6 @@ if (--processCnt < 0)
 
 if (head < 2400)
 {
-	if (head < 16)
-	{
-		LogTextMessage("darn");
-	}
 	outlet_loopstart = 1;
 }
 else {
@@ -286,70 +342,7 @@ outlet_tap2 = vals[2];
 outlet_tap3 = vals[3];]]></code.srate>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="c9377000-383f-43c6-b11c-406b2ee95f2a" name="trisfreq_1" x="868" y="126">
-      <params/>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e" name="mix_2" x="1008" y="126">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="cdc04a58-47fe-43db-9cc5-1f709b77c42e">
-         <sDescription>4 input</sDescription>
-         <author>JS</author>
-         <license>BSD</license>
-         <inlets>
-            <frac32buffer name="in1" description="input 1"/>
-            <frac32buffer name="in2" description="input 2"/>
-            <frac32buffer name="in3" description="input 3"/>
-            <frac32buffer name="in4" description="input 4"/>
-         </inlets>
-         <outlets>
-            <frac32buffer name="out" description="mix out"/>
-         </outlets>
-         <displays/>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.srate><![CDATA[outlet_out = inlet_in1+inlet_in2+inlet_in3+inlet_in4;]]></code.srate>
-      </object>
-   </patchobj>
-   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_1" x="1092" y="126">
-      <params>
-         <frac32.s.map name="freq" value="50.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826" name="mix_3" x="1204" y="126">
-      <params/>
-      <attribs/>
-      <object id="patch/object" uuid="df57353c-5d94-4bd3-83b3-abc9b92a1826">
-         <sDescription>2 input s-rate mixer, shows gain units</sDescription>
-         <author>JS</author>
-         <license>BSD</license>
-         <inlets>
-            <frac32buffer name="in1" description="input 1"/>
-            <frac32buffer name="in2" description="input 2"/>
-            <frac32 name="mix" description="mix value "/>
-         </inlets>
-         <outlets>
-            <frac32buffer name="out" description="mix out"/>
-         </outlets>
-         <displays>
-            <int32.label name="mix"/>
-         </displays>
-         <params/>
-         <attribs/>
-         <includes/>
-         <code.krate><![CDATA[disp_mix = inlet_mix;]]></code.krate>
-         <code.srate><![CDATA[outlet_out = (___SMMUL(inlet_in2<<2, inlet_mix<<3)) +
-(___SMMUL(inlet_in1<<2, ((1<<27)-inlet_mix)<<3));]]></code.srate>
-      </object>
-   </patchobj>
-   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1288" y="126">
-      <params/>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="560" y="182">
+   <patchobj type="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9" name="midihandler" x="602" y="196">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="251c57d1-6833-4666-a469-fb7c2b44e6c9">
@@ -362,35 +355,37 @@ outlet_tap3 = vals[3];]]></code.srate>
             <int32 name="level4"/>
             <int32 name="levelmain"/>
             <int32 name="patchnr"/>
-            <bool32 name="save"/>
             <bool32 name="load"/>
+            <bool32 name="save"/>
+            <int32 name="bpm"/>
          </inlets>
          <outlets>
+            <frac32 name="combfdbk"/>
             <frac32 name="pitch1"/>
-            <frac32 name="combfdbk1"/>
             <frac32 name="comblevel1"/>
             <frac32 name="ringlevel1"/>
             <frac32 name="vcflevel1"/>
-            <frac32 name="level1"/>
             <frac32 name="pitch2"/>
-            <frac32 name="combfdbk2"/>
             <frac32 name="comblevel2"/>
             <frac32 name="ringlevel2"/>
             <frac32 name="vcflevel2"/>
-            <frac32 name="level2"/>
             <frac32 name="pitch3"/>
-            <frac32 name="combfdbk3"/>
             <frac32 name="comblevel3"/>
             <frac32 name="ringlevel3"/>
             <frac32 name="vcflevel3"/>
-            <frac32 name="level3"/>
             <frac32 name="pitch4"/>
-            <frac32 name="combfdbk4"/>
             <frac32 name="comblevel4"/>
             <frac32 name="ringlevel4"/>
             <frac32 name="vcflevel4"/>
-            <frac32 name="level4"/>
             <frac32 name="mix"/>
+            <frac32 name="vcfreso"/>
+            <int32 name="samplesTotal"/>
+            <int32 name="tap1"/>
+            <int32 name="tap2"/>
+            <int32 name="tap3"/>
+            <int32 name="tap4"/>
+            <frac32 name="mainFeedback"/>
+            <frac32 name="fastFeedback"/>
          </outlets>
          <displays/>
          <params/>
@@ -398,7 +393,6 @@ outlet_tap3 = vals[3];]]></code.srate>
          <includes/>
          <code.declaration><![CDATA[int count = 0;
 int initialize = 0;
-//int lastValue[128];
 int queueHead = 0;
 int queueTail = 0;
 int inQueue = 0;
@@ -407,8 +401,14 @@ const int32_t gainValues[4] = {float_to_q27(0.0),float_to_q27(0.25),float_to_q27
 
 int32_t lastLevel[5] = {0,0,0,0,0};
 
+int bpmOld = 0;
+
 struct Settings
 {
+	int32_t bpm;
+	int32_t division;
+	int32_t totalTaps;
+	int32_t tapPoints[4];
 	int8_t combGain[4]; // logic level (off, 1, 2, 3=max)
 	int32_t combGainValue[4]; // dsp level 
 	int8_t ringGain[4];
@@ -419,7 +419,14 @@ struct Settings
 	int32_t pitchValue[4];
 	int32_t combFeedbackLevel;
 	int32_t mixLevel;
+	int32_t mainFeedbackLevel;
+	int32_t fastFeedbackLevel;
+	int32_t vcfReso;
 } settings = {
+	110, 
+	2, 
+	8, 
+	{2,3,4,5},
 	{3,3,3,3},
 	{float_to_q27(0.999), float_to_q27(0.999), float_to_q27(0.999), float_to_q27(0.999)},
 	{2,2,2,2},
@@ -429,10 +436,14 @@ struct Settings
 	{float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999),float_to_q27(0.999)},
 	{(-12)<<21,0<<21, 7 << 21, 12<<21},
 	float_to_q27(0.0),
-	float_to_q27(0.5)};
+	float_to_q27(0.5),
+	float_to_q27(0.0),
+	float_to_q27(0.0),
+	float_to_q27(0.9),
+};
 
 int programmingTone = -1;
-
+int programmingRhythm = -1;
 
 void saveDataBlock(FIL &file, const void *data, int size, char *filename)
 {
@@ -449,10 +460,11 @@ void loadDataBlock(FIL &file, void *data, int size, char *filename)
     err = f_read(&file, data, size,&bytes_read);
     if (err != FR_OK) report_fatfs_error(err,filename);
 }
+
 void savePatch(int nr)
 {
     char filename[128];
-    chsnprintf(filename, sizeof(filename), "patch_%03d.bin", nr); 
+    chsnprintf(filename, sizeof(filename), "patch%03d.bin", nr); 
     LogTextMessage("saving to %s", filename);
     FIL FileObject;
     FRESULT err;
@@ -468,7 +480,7 @@ void savePatch(int nr)
 void loadPatch(int nr)
 {
     char filename[128];
-    chsnprintf(filename, sizeof(filename), "patch_%03d.bin", nr); 
+    chsnprintf(filename, sizeof(filename), "patch%03d.bin", nr); 
     LogTextMessage("saving to %s", filename);
     FIL FileObject;
     FRESULT err;
@@ -696,6 +708,59 @@ void setTrisValue(int row, int channel)
 	setStatus();
 }
 
+
+void ProgramRhythm(int value)
+{
+	if (programmingRhythm >= 0)
+	{
+		if (value < settings.totalTaps)
+		{
+			settings.tapPoints[programmingRhythm] = value;
+		}
+		setRhythm(programmingRhythm);
+	}	
+}
+
+void showRhythm()
+{
+	for (int i=0; i < settings.totalTaps; ++i)
+		{
+			if (i==settings.tapPoints[0])
+				AddMidiMessage(0x90,24+i, 3);
+			else
+			if (i==settings.tapPoints[1])
+				AddMidiMessage(0x90,24+i, 5);
+			else
+			if (i==settings.tapPoints[2])
+				AddMidiMessage(0x90,24+i, 3);
+			else
+			if (i==settings.tapPoints[3])
+				AddMidiMessage(0x90,24+i, 5);
+			else
+				AddMidiMessage(0x90,24+i, 1);			
+		}
+}
+
+void setRhythm(int channel)
+{
+	if (programmingRhythm == -1)
+	{
+		for (int i=0; i < settings.totalTaps; ++i)
+		{
+			if (i==settings.tapPoints[channel])
+				AddMidiMessage(0x90,24+i, 3);
+			else
+				AddMidiMessage(0x90,24+i, 1);			
+		}
+		programmingRhythm = channel;
+	}
+	else
+	{
+		showRhythm();
+		programmingRhythm = -1;	
+	}	
+}
+
 void ProgramNote(int height, int velo)
 {
 	if (programmingTone >= 0)
@@ -704,7 +769,6 @@ void ProgramNote(int height, int velo)
 		setProgrammingTone(programmingTone);
 	}
 }
-
 void setProgrammingTone(int channel)
 {
 	if (programmingTone == -1)
@@ -721,12 +785,6 @@ void setProgrammingTone(int channel)
 	}
 }
 
-void SetVolumeLevel(int channel, int level)
-{
-	settings.outGain[channel] = float_to_q27((float)level/128.0);
-	//LogTextMessage("%d", outGain[channel]);
-}
-
 void SetCombFeedBack(int level)
 {
 	const float c_maxTime = 0.5f;
@@ -736,10 +794,27 @@ void SetCombFeedBack(int level)
 void SetMix(int level)
 {
      settings.mixLevel = float_to_q27(level/128.0f);
+}
+
+void SetMainFeedback(int level)
+{
+     settings.mainFeedbackLevel = float_to_q27(level/128.0f)<<4;
+}
+
+void SetFastFeedback(int level)
+{
+     settings.fastFeedbackLevel = float_to_q27(level/128.0f)<<2;
+}
+
+void SetVcfQ(int level)
+{
+     settings.vcfReso = float_to_q27(pow((float)level/128.0f,0.3));
+     LogTextMessage("%d -> %f", level, q27_to_float(settings.vcfReso));
 }]]></code.declaration>
          <code.init><![CDATA[SetCombFeedBack(65);
 clearAll(0);
-setStatus();]]></code.init>
+setStatus();
+showRhythm();]]></code.init>
          <code.krate><![CDATA[static int countUp=0;
 static int beat = 3000;
 
@@ -754,6 +829,7 @@ if (inlet_load)
 	loadPatch(inlet_patchnr);
 }
 
+outlet_combfdbk=settings.combFeedbackLevel;
 outlet_pitch1=settings.pitchValue[0];
 outlet_pitch2=settings.pitchValue[1];
 outlet_pitch3=settings.pitchValue[2];
@@ -762,10 +838,6 @@ outlet_comblevel1=settings.combGainValue[0];
 outlet_comblevel2=settings.combGainValue[1];
 outlet_comblevel3=settings.combGainValue[2];
 outlet_comblevel4=settings.combGainValue[3];
-outlet_combfdbk1=settings.combFeedbackLevel;
-outlet_combfdbk2=settings.combFeedbackLevel;
-outlet_combfdbk3=settings.combFeedbackLevel;
-outlet_combfdbk4=settings.combFeedbackLevel;
 outlet_ringlevel1=settings.ringGainValue[0];
 outlet_ringlevel2=settings.ringGainValue[1];
 outlet_ringlevel3=settings.ringGainValue[2];
@@ -774,13 +846,24 @@ outlet_vcflevel1=settings.vcfGainValue[0];
 outlet_vcflevel2=settings.vcfGainValue[1];
 outlet_vcflevel3=settings.vcfGainValue[2];
 outlet_vcflevel4=settings.vcfGainValue[3];
-outlet_level1=settings.outGain[0];
-outlet_level2=settings.outGain[1];
-outlet_level3=settings.outGain[2];
-outlet_level4=settings.outGain[3];
 
 outlet_mix=settings.mixLevel;
+outlet_mainFeedback = settings.mainFeedbackLevel;
+outlet_fastFeedback = settings.fastFeedbackLevel;
+outlet_vcfreso = settings.vcfReso;
 
+settings.bpm = inlet_bpm;
+outlet_samplesTotal = 60*settings.totalTaps*48000/settings.bpm/settings.division;
+outlet_tap1 =  60*settings.tapPoints[0]*48000/settings.bpm/settings.division;
+outlet_tap2 =  60*settings.tapPoints[1]*48000/settings.bpm/settings.division;
+outlet_tap3 =  60*settings.tapPoints[2]*48000/settings.bpm/settings.division;
+outlet_tap4 =  60*settings.tapPoints[3]*48000/settings.bpm/settings.division;
+
+if (bpmOld != inlet_bpm)
+{
+	bpmOld = inlet_bpm;
+	LogTextMessage("%d: [%d %d %d %d] ", outlet_samplesTotal,outlet_tap1,outlet_tap2,outlet_tap3,outlet_tap4);
+}
 beat--;
 if (beat <=0)
 {
@@ -857,23 +940,51 @@ if ((status == MIDI_NOTE_ON) || (status == MIDI_NOTE_OFF))
 {
 	if (data1 < 55)
 	{
-		int channel = (data1/2)%4;
-		int row = data1/8;
-		if ((data1 %2) == 0)
+		if (status == MIDI_NOTE_ON)
 		{
-			if (status == MIDI_NOTE_ON)
-				setTrisValue(row, channel);
-		}
-		else
-		{
-			if (data1/8 == 0)
+			if (programmingRhythm>=0)
 			{
-				if (status == MIDI_NOTE_ON)
-					setProgrammingTone(data1/2);
+				if (data1>=24)
+				{
+					ProgramRhythm(data1-24);
+					return;
+				}
 			}
-		}
-		
+			
+			int channel = (data1/2)%4;
+			int row = data1/8;
+			int subColumn = data1%2;
+			switch(subColumn)
+			{
+				case 0:
+					switch(row)
+					{
+						case 0:
+						case 1:
+						case 2:
+							setTrisValue(row, channel);
+							break;
+					}
+					break;
+				case 1:
+					switch(row)
+					{
+						case 0:
+							setProgrammingTone(channel);
+							break;
+						case 4:
+							setRhythm(channel);
+							break;
+
+					}
+					break;
+			}
+		}		
 	}else if (data1 >= 64 && data1 <= 71)
+	{
+	}else if (data1 >= 82 && data1 <= 86) // scene button
+	{
+	}else if (data1 >= 81) // stop all clips
 	{
 	}
 }
@@ -883,11 +994,23 @@ if (status == MIDI_CONTROL_CHANGE)
 {
 	if ((data1>=48 && data1<=51))
 	{
-		SetVolumeLevel(data1-48, data2);		
+		// SetVolumeLevel(data1-48, data2);		
+	}
+	if (data1==51)
+	{
+		SetVcfQ(data2);
 	}
 	if (data1==52)
 	{
 		SetCombFeedBack(data2);
+	}
+	if (data1==53)
+	{
+		SetFastFeedback(data2);
+	}
+	if (data1==54)
+	{
+		SetMainFeedback(data2);
 	}
 	if (data1==55)
 	{
@@ -896,152 +1019,177 @@ if (status == MIDI_CONTROL_CHANGE)
 }]]></code.midihandler>
       </object>
    </patchobj>
-   <patchobj type="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753" name="kticks2sec_1" x="14" y="196">
+   <obj type="trisfreq" uuid="b1ade4b7-4989-45c3-b883-e45b35e7865f" name="trisfreq_2" x="868" y="252">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/toggle" uuid="42b8134fa729d54bfc8d62d6ef3fa99498c1de99" name="toggle_3" x="0" y="266">
       <params>
-         <int32 name="bpm" value="110"/>
-         <int32 name="div" value="2"/>
-         <int32 name="total" value="8"/>
-         <int32 name="tap1" value="2"/>
-         <int32 name="tap2" value="3"/>
-         <int32 name="tap3" value="5"/>
-         <int32 name="tap4" value="7"/>
+         <bool32.tgl name="b" value="1"/>
       </params>
       <attribs/>
-      <object id="patch/object" uuid="8e65e2a2-a2ed-4ebc-8fc0-631a8cf64753">
-         <sDescription>BPM to samples</sDescription>
-         <author>JS</author>
-         <license>GPL</license>
+   </obj>
+   <obj type="gpio/in/digital" uuid="f59f139e8da912742832dc541157f20f30b7ac1b" name="digital_1" x="56" y="364">
+      <params/>
+      <attribs>
+         <combo attributeName="pad" selection="PB0"/>
+         <combo attributeName="mode" selection="pullup"/>
+      </attribs>
+   </obj>
+   <obj type="logic/toggle" uuid="f42f0d3aab552c17bc78b9e65f85dc24f977503d" name="toggle_1" x="154" y="364">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="gpio/out/led2" uuid="3d7a4c75d1f9901181a17ba5de752782de911803" name="led2_1" x="224" y="364">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="trisfreq" uuid="b1ade4b7-4989-45c3-b883-e45b35e7865f" name="trisfreq_3" x="868" y="378">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="filter/lp1" uuid="1b1fd7085e44d2b7b80b59b8d68796b909c1b2cc" name="lp1_2" x="1162" y="406">
+      <params>
+         <frac32.s.map name="freq" value="47.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="681867c4-f1a1-4bd6-b081-1866bdbaffe5" name="tap_tempo_1" x="294" y="420">
+      <params>
+         <bool32.mom name="tap" value="0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="681867c4-f1a1-4bd6-b081-1866bdbaffe5">
+         <sDescription>Tap tempo, interpolate over 8 beats</sDescription>
+         <author>Are Leistad</author>
+         <license>BSD</license>
          <inlets>
-            <int32 name="patchnr"/>
-            <bool32 name="save"/>
-            <bool32 name="load"/>
+            <bool32.rising name="tap" description="Tap input"/>
          </inlets>
          <outlets>
-            <int32 name="samplesTotal"/>
-            <int32 name="tap1"/>
-            <int32 name="tap2"/>
-            <int32 name="tap3"/>
-            <int32 name="tap4"/>
+            <int32.positive name="beatWidthInSamples"/>
+            <int32 name="bpm"/>
          </outlets>
          <displays>
-            <int32.label name="d1"/>
-            <int32.label name="d2"/>
+            <int32.label name="bpm"/>
          </displays>
          <params>
-            <int32 name="bpm">
-               <MinValue i="40"/>
-               <MaxValue i="240"/>
-            </int32>
-            <int32 name="div">
-               <MinValue i="1"/>
-               <MaxValue i="24"/>
-            </int32>
-            <int32 name="total">
-               <MinValue i="3"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap1">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap2">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap3">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
-            <int32 name="tap4">
-               <MinValue i="0"/>
-               <MaxValue i="16"/>
-            </int32>
+            <bool32.mom name="tap" noLabel="false"/>
          </params>
          <attribs/>
          <includes/>
-         <code.declaration><![CDATA[struct Settings
-{
-	int32_t bpm;
-	int32_t division;
-	int32_t totalTaps;
-	int32_t tapPoints[4];
-}settings = {110, 2, 8, {2,3,4,5}};
+         <code.declaration><![CDATA[#define MAXTAPS 5
 
-void saveDataBlock(FIL &file, const void *data, int size, char *filename)
-{
-    FRESULT err;
-    UINT bytes_written;
-    err = f_write(&file, data, size,&bytes_written);
-    if (err != FR_OK) report_fatfs_error(err,filename);
+int32_t ktimer = 0;
+int32_t lastTime = 0;
+bool old_inlet_tap = false;
+bool old_param_tap = false;
+
+uint32_t tapCount;
+uint32_t tapBuffer[MAXTAPS];
+float lastBpm=120.0;]]></code.declaration>
+         <code.krate><![CDATA[if((inlet_tap != old_inlet_tap)
+   || (param_tap != old_param_tap))
+ {
+  	old_param_tap = param_tap;
+ 	old_inlet_tap = inlet_tap;
+	if (!inlet_tap || param_tap)
+	{
+	    if (lastTime == 0)
+	    {
+	        tapCount = 0;
+	        tapBuffer[MAXTAPS - 1] = ktimer;
+	        lastTime = ktimer;
+	    }
+	    else
+	    {
+	        uint32_t delta = ktimer - lastTime;
+	        if (delta < 40*3)
+	            return;
+	        LogTextMessage("dt=%ld", delta);
+	        if (delta > 2000*3)
+	        {
+	            tapCount = 0;
+	            tapBuffer[MAXTAPS - 1] = ktimer;
+	            lastTime = ktimer;
+	        }
+	        else
+	        {
+	            ++tapCount;
+	            for (auto i = 0; i < MAXTAPS - 1; ++i)
+	            {
+	                tapBuffer[i] = tapBuffer[i + 1]; 
+	            }
+	            tapBuffer[MAXTAPS - 1] = ktimer;
+	            if (tapCount > MAXTAPS - 1)
+	            {
+	                tapCount = MAXTAPS - 1;
+	            }
+	            if (tapCount)
+	            {
+	                unsigned long deltaBuffer = tapBuffer[MAXTAPS - 1] - tapBuffer[MAXTAPS - 1 - tapCount];
+	                auto bpm = 3*60000.0 / (float(deltaBuffer) / float(tapCount));
+	                if (bpm >= 40 && bpm <= 250)
+	                    lastBpm = bpm;
+	                outlet_bpm = int(lastBpm+0.5);
+                     LogTextMessage("t=%ld %f BPM", ktimer, lastBpm);
+	            }
+	            lastTime = ktimer;
+	        }
+	    }
+    }
 }
+if (ktimer==0)
+	outlet_bpm = int(lastBpm+0.5);
 
-void loadDataBlock(FIL &file, void *data, int size, char *filename)
-{
-    FRESULT err;
-    UINT bytes_read;
-    err = f_read(&file, data, size,&bytes_read);
-    if (err != FR_OK) report_fatfs_error(err,filename);
-}
-void savePatch(int nr)
-{
-    char filename[128];
-    chsnprintf(filename, sizeof(filename), "patch_rhythm_%03d.bin", nr); 
-    LogTextMessage("saving to %s", filename);
-    FIL FileObject;
-    FRESULT err;
-    UINT bytes_written;
-    codec_clearbuffer();
-    err = f_open(&FileObject, filename, FA_WRITE | FA_CREATE_ALWAYS);
-    if (err != FR_OK) {report_fatfs_error(err,filename); return;}
-    saveDataBlock(FileObject, (void *)&settings, sizeof(settings),filename);
-    err = f_close(&FileObject);
-    if (err != FR_OK) report_fatfs_error(err,filename);
-}
-
-void loadPatch(int nr)
-{
-    char filename[128];
-    chsnprintf(filename, sizeof(filename), "patch_rhythm_%03d.bin", nr); 
-    LogTextMessage("saving to %s", filename);
-    FIL FileObject;
-    FRESULT err;
-    UINT bytes_written;
-    codec_clearbuffer();
-    err = f_open(&FileObject, filename, FA_READ | FA_OPEN_EXISTING);
-    if (err != FR_OK) {report_fatfs_error(err,filename); return;}
-    loadDataBlock(FileObject,  (void *)&settings, sizeof(settings),filename);
-    err = f_close(&FileObject);
-    if (err != FR_OK) report_fatfs_error(err,filename);	
-}]]></code.declaration>
-         <code.krate><![CDATA[outlet_samplesTotal =  60*param_total*48000/param_bpm/param_div;
-outlet_tap1 =  60*param_tap1*48000/param_bpm/param_div;
-outlet_tap2 =  60*param_tap2*48000/param_bpm/param_div;
-outlet_tap3 =  60*param_tap3*48000/param_bpm/param_div;
-outlet_tap4 =  60*param_tap4*48000/param_bpm/param_div;
-
-disp_d1 = outlet_samplesTotal;
-disp_d2 = outlet_tap1;]]></code.krate>
+ktimer++;]]></code.krate>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="c9377000-383f-43c6-b11c-406b2ee95f2a" name="trisfreq_2" x="868" y="266">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="adafruit_4x7segment" uuid="08314d3d-426d-4f8e-8320-487560daee8e" name="adafruit_4x7segment_1" x="224" y="364">
-      <params/>
-      <attribs/>
-   </obj>
-   <obj type="ctrl/dial p" uuid="cc5d2846c3d50e425f450c4b9851371b54f4d674" name="dial_1" x="770" y="378">
+   <obj type="filter/hp" uuid="7829b56456e975f1d89bda2ad1c7ad678080a73b" name="hp_1" x="1274" y="420">
       <params>
-         <frac32.u.map name="value" value="63.5"/>
+         <frac32.s.map name="pitch" value="-6.0"/>
+         <frac32.u.map name="reso" value="1.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="trisfreq" uuid="c9377000-383f-43c6-b11c-406b2ee95f2a" name="trisfreq_3" x="868" y="406">
+   <patchobj type="patch/object" uuid="75cd1a7a-1b26-479e-a3a9-23fd009eb5bd" name="mixback" x="1050" y="434">
       <params/>
       <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639" name="cc_1" x="14" y="504">
+      <object id="patch/object" uuid="75cd1a7a-1b26-479e-a3a9-23fd009eb5bd">
+         <sDescription>4 input s-rate mute mix</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <inlets>
+            <frac32buffer name="in1" description="input 1"/>
+            <frac32buffer name="in2" description="input 2"/>
+            <frac32buffer name="in3" description="input 3"/>
+            <frac32buffer name="in4" description="input 4"/>
+            <bool32 name="mute1"/>
+            <bool32 name="mute2"/>
+            <bool32 name="mute3"/>
+            <bool32 name="mute4"/>
+         </inlets>
+         <outlets>
+            <frac32buffer name="out" description="mix out"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.srate><![CDATA[int32_t accum = 0;
+
+if (!inlet_mute1)
+	accum += inlet_in1;
+if (!inlet_mute2)
+	accum += inlet_in2;
+if (!inlet_mute3)
+	accum += inlet_in3;
+if (!inlet_mute4)
+	accum += inlet_in4;
+outlet_out = accum;]]></code.srate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639" name="cc_1" x="182" y="476">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="c4917c91-1609-4359-93f9-51665500b639">
@@ -1124,11 +1272,59 @@ if ((status&0xF0) == MIDI_NOTE_ON) {
 }]]></code.midihandler>
       </object>
    </patchobj>
-   <obj type="trisfreq" uuid="c9377000-383f-43c6-b11c-406b2ee95f2a" name="trisfreq_4" x="868" y="546">
+   <obj type="trisfreq" uuid="b1ade4b7-4989-45c3-b883-e45b35e7865f" name="trisfreq_4" x="868" y="504">
       <params/>
       <attribs/>
    </obj>
-   <patchobj type="patch/object" uuid="66bfc0c0-4faf-401f-94e2-0ea73e1b17e4" name="==_1" x="196" y="630">
+   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="14" y="546">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="7dfa747d-c3d2-455f-848a-9c89a6983a46" name="object_1" x="294" y="546">
+      <params/>
+      <attribs/>
+      <object id="patch/object" uuid="7dfa747d-c3d2-455f-848a-9c89a6983a46">
+         <inlets>
+            <int32 name="patchNr"/>
+            <int32 name="prefixPatchNr"/>
+            <int32 name="bpmValue"/>
+         </inlets>
+         <outlets>
+            <int32 name="out"/>
+            <int32 name="p"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int lastPrefix = 'P';
+
+int lastBpm=0;
+int lastPatch=999;]]></code.declaration>
+         <code.krate><![CDATA[if (inlet_patchNr != lastPatch)
+{
+	lastPrefix = inlet_prefixPatchNr;
+	lastPatch = inlet_patchNr;
+	outlet_out = lastPatch;
+	outlet_p = lastPrefix;
+	LogTextMessage("patch change: %c %d", lastPrefix, lastPatch);
+}
+
+if (inlet_bpmValue != lastBpm)
+{
+	lastPrefix = 'b';
+	lastBpm = inlet_bpmValue;
+	outlet_out = lastBpm;
+	outlet_p = lastPrefix;
+	LogTextMessage("BPM change: %c %d", lastPrefix, lastBpm);
+}]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="adafruit_4x7segment" uuid="3aaabf85-c14e-4255-8005-4783f207612a" name="adafruit_4x7segment_1" x="462" y="560">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="66bfc0c0-4faf-401f-94e2-0ea73e1b17e4" name="==_1" x="112" y="588">
       <params/>
       <attribs/>
       <object id="patch/object" uuid="66bfc0c0-4faf-401f-94e2-0ea73e1b17e4">
@@ -1154,19 +1350,41 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <code.midihandler><![CDATA[lotsofData[0] = status;]]></code.midihandler>
       </object>
    </patchobj>
-   <obj type="gpio/i2c/config" uuid="b095a33e56de5fcd23740a7d983bc0bafb315d81" name="config_1" x="14" y="658">
+   <patchobj type="patch/object" uuid="49970e87-78c3-4b9e-8f27-4d8d21686d39" name="&gt;c_1" x="882" y="644">
       <params/>
       <attribs/>
-   </obj>
+      <object id="patch/object" uuid="49970e87-78c3-4b9e-8f27-4d8d21686d39">
+         <sDescription>delay == 0</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <int32 name="in1"/>
+            <int32 name="in2"/>
+            <int32 name="in3"/>
+            <int32 name="in4"/>
+         </inlets>
+         <outlets>
+            <bool32 name="out1" description="out"/>
+            <bool32 name="out2"/>
+            <bool32 name="out3"/>
+            <bool32 name="out4"/>
+         </outlets>
+         <displays/>
+         <params/>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[outlet_out1 = inlet_in1 == 0;
+outlet_out2 = inlet_in2 == 0;
+outlet_out3 = inlet_in3 == 0;
+outlet_out4 = inlet_in4 == 0;]]></code.krate>
+      </object>
+   </patchobj>
    <nets>
       <net>
-         <source obj="kticks2sec_1" outlet="samplesTotal"/>
-         <dest obj="echo_1" inlet="delayTimeInSamples"/>
-      </net>
-      <net>
          <source obj="in_1" outlet="wave"/>
-         <dest obj="mix_3" inlet="in1"/>
          <dest obj="gain_1" inlet="in"/>
+         <dest obj="mix_3" inlet="in1"/>
       </net>
       <net>
          <source obj="mix_3" outlet="out"/>
@@ -1174,33 +1392,13 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <dest obj="out_1" inlet="right"/>
       </net>
       <net>
-         <source obj="kticks2sec_1" outlet="tap1"/>
-         <dest obj="echo_1" inlet="tap1InSamples"/>
-      </net>
-      <net>
-         <source obj="kticks2sec_1" outlet="tap2"/>
-         <dest obj="echo_1" inlet="tap2InSamples"/>
-      </net>
-      <net>
-         <source obj="kticks2sec_1" outlet="tap3"/>
-         <dest obj="echo_1" inlet="tap3InSamples"/>
-      </net>
-      <net>
-         <source obj="kticks2sec_1" outlet="tap4"/>
-         <dest obj="echo_1" inlet="tap4InSamples"/>
-      </net>
-      <net>
          <source obj="digital_1" outlet="out"/>
          <dest obj="toggle_1" inlet="trig"/>
+         <dest obj="tap_tempo_1" inlet="tap"/>
       </net>
       <net>
          <source obj="digital_2" outlet="out"/>
          <dest obj="toggle_2" inlet="trig"/>
-      </net>
-      <net>
-         <source obj="toggle_1" outlet="o"/>
-         <dest obj="led2_1" inlet="in"/>
-         <dest obj="gain_1" inlet="onoff"/>
       </net>
       <net>
          <source obj="toggle_2" outlet="o"/>
@@ -1220,28 +1418,27 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <dest obj="mix_1" inlet="in2"/>
       </net>
       <net>
-         <source obj="lp1_1" outlet="out"/>
-         <dest obj="mix_3" inlet="in2"/>
-         <dest obj="mix_1" inlet="in3"/>
-      </net>
-      <net>
          <source obj="mix_2" outlet="out"/>
          <dest obj="lp1_1" inlet="in"/>
       </net>
       <net>
          <source obj="echo_1" outlet="tap0"/>
+         <dest obj="mixback" inlet="in1"/>
          <dest obj="trisfreq_1" inlet="audioin"/>
       </net>
       <net>
          <source obj="echo_1" outlet="tap1"/>
+         <dest obj="mixback" inlet="in2"/>
          <dest obj="trisfreq_2" inlet="audioin"/>
       </net>
       <net>
          <source obj="echo_1" outlet="tap2"/>
+         <dest obj="mixback" inlet="in3"/>
          <dest obj="trisfreq_3" inlet="audioin"/>
       </net>
       <net>
          <source obj="echo_1" outlet="tap3"/>
+         <dest obj="mixback" inlet="in4"/>
          <dest obj="trisfreq_4" inlet="audioin"/>
       </net>
       <net>
@@ -1269,8 +1466,11 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <dest obj="mix_2" inlet="in4"/>
       </net>
       <net>
-         <source obj="midihandler" outlet="combfdbk1"/>
+         <source obj="midihandler" outlet="combfdbk"/>
          <dest obj="trisfreq_1" inlet="comb_feedback"/>
+         <dest obj="trisfreq_2" inlet="comb_feedback"/>
+         <dest obj="trisfreq_3" inlet="comb_feedback"/>
+         <dest obj="trisfreq_4" inlet="comb_feedback"/>
       </net>
       <net>
          <source obj="midihandler" outlet="comblevel1"/>
@@ -1279,10 +1479,6 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
       <net>
          <source obj="midihandler" outlet="vcflevel1"/>
          <dest obj="trisfreq_1" inlet="wah_gain"/>
-      </net>
-      <net>
-         <source obj="midihandler" outlet="combfdbk2"/>
-         <dest obj="trisfreq_2" inlet="comb_feedback"/>
       </net>
       <net>
          <source obj="midihandler" outlet="comblevel2"/>
@@ -1301,10 +1497,6 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <dest obj="trisfreq_3" inlet="pitch"/>
       </net>
       <net>
-         <source obj="midihandler" outlet="combfdbk3"/>
-         <dest obj="trisfreq_3" inlet="comb_feedback"/>
-      </net>
-      <net>
          <source obj="midihandler" outlet="comblevel3"/>
          <dest obj="trisfreq_3" inlet="comb_gain"/>
       </net>
@@ -1319,10 +1511,6 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
       <net>
          <source obj="midihandler" outlet="pitch4"/>
          <dest obj="trisfreq_4" inlet="pitch"/>
-      </net>
-      <net>
-         <source obj="midihandler" outlet="combfdbk4"/>
-         <dest obj="trisfreq_4" inlet="comb_feedback"/>
       </net>
       <net>
          <source obj="midihandler" outlet="comblevel4"/>
@@ -1345,7 +1533,7 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
          <dest obj="mix_3" inlet="mix"/>
       </net>
       <net>
-         <source obj="dial_1" outlet="out"/>
+         <source obj="midihandler" outlet="vcfreso"/>
          <dest obj="trisfreq_1" inlet="wah_q"/>
          <dest obj="trisfreq_2" inlet="wah_q"/>
          <dest obj="trisfreq_3" inlet="wah_q"/>
@@ -1353,22 +1541,15 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
       </net>
       <net>
          <source obj="cc_1" outlet="patchnr"/>
-         <dest obj="kticks2sec_1" inlet="patchnr"/>
-         <dest obj="adafruit_4x7segment_1" inlet="intvalue"/>
+         <dest obj="object_1" inlet="patchNr"/>
          <dest obj="midihandler" inlet="patchnr"/>
       </net>
       <net>
-         <source obj="cc_1" outlet="prefix"/>
-         <dest obj="adafruit_4x7segment_1" inlet="prefix"/>
-      </net>
-      <net>
          <source obj="cc_1" outlet="save"/>
-         <dest obj="kticks2sec_1" inlet="save"/>
          <dest obj="midihandler" inlet="save"/>
       </net>
       <net>
          <source obj="cc_1" outlet="load"/>
-         <dest obj="kticks2sec_1" inlet="load"/>
          <dest obj="midihandler" inlet="load"/>
       </net>
       <net>
@@ -1394,6 +1575,95 @@ LogTextMessage("'%s'", lotsofData);]]></code.init>
       <net>
          <source obj="echo_1" outlet="loopstart"/>
          <dest obj="adafruit_4x7segment_1" inlet="doubledot"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="samplesTotal"/>
+         <dest obj="echo_1" inlet="delayTimeInSamples"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="tap1"/>
+         <dest obj="&gt;c_1" inlet="in1"/>
+         <dest obj="echo_1" inlet="tap1InSamples"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="tap2"/>
+         <dest obj="&gt;c_1" inlet="in2"/>
+         <dest obj="echo_1" inlet="tap2InSamples"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="tap3"/>
+         <dest obj="&gt;c_1" inlet="in3"/>
+         <dest obj="echo_1" inlet="tap3InSamples"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="tap4"/>
+         <dest obj="&gt;c_1" inlet="in4"/>
+         <dest obj="echo_1" inlet="tap4InSamples"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="mainFeedback"/>
+         <dest obj="mix_1" inlet="gain2"/>
+      </net>
+      <net>
+         <source obj="&gt;c_1" outlet="out1"/>
+         <dest obj="mixback" inlet="mute1"/>
+      </net>
+      <net>
+         <source obj="&gt;c_1" outlet="out2"/>
+         <dest obj="mixback" inlet="mute2"/>
+      </net>
+      <net>
+         <source obj="&gt;c_1" outlet="out3"/>
+         <dest obj="mixback" inlet="mute3"/>
+      </net>
+      <net>
+         <source obj="&gt;c_1" outlet="out4"/>
+         <dest obj="mixback" inlet="mute4"/>
+      </net>
+      <net>
+         <source obj="mixback" outlet="out"/>
+         <dest obj="lp1_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="lp1_1" outlet="out"/>
+         <dest obj="mix_3" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="midihandler" outlet="fastFeedback"/>
+         <dest obj="mix_1" inlet="gain3"/>
+      </net>
+      <net>
+         <source obj="toggle_1" outlet="o"/>
+         <dest obj="led2_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="out"/>
+         <dest obj="adafruit_4x7segment_1" inlet="intvalue"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="p"/>
+         <dest obj="adafruit_4x7segment_1" inlet="prefix"/>
+      </net>
+      <net>
+         <source obj="cc_1" outlet="prefix"/>
+         <dest obj="object_1" inlet="prefixPatchNr"/>
+      </net>
+      <net>
+         <source obj="tap_tempo_1" outlet="bpm"/>
+         <dest obj="object_1" inlet="bpmValue"/>
+         <dest obj="midihandler" inlet="bpm"/>
+      </net>
+      <net>
+         <source obj="toggle_3" outlet="o"/>
+         <dest obj="gain_1" inlet="onoff"/>
+      </net>
+      <net>
+         <source obj="hp_1" outlet="out"/>
+         <dest obj="mix_1" inlet="in3"/>
+      </net>
+      <net>
+         <source obj="lp1_2" outlet="out"/>
+         <dest obj="hp_1" inlet="in"/>
       </net>
    </nets>
    <settings>
@@ -1424,9 +1694,9 @@ degree 99
 
 ]]></notes>
    <windowPos>
-      <x>376</x>
+      <x>15</x>
       <y>23</y>
-      <width>1064</width>
+      <width>1425</width>
       <height>877</height>
    </windowPos>
 </patch-1.0>

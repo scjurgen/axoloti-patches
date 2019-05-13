@@ -207,7 +207,7 @@ outlet_out = accum;]]></code.srate>
       <params/>
       <attribs/>
    </obj>
-   <patcher type="patch/patcher" uuid="1ed75abd-54f4-4ab4-ad00-2c66c9c5d00b" name="obj_1" x="322" y="392">
+   <patcher type="patch/patcher" uuid="c4604d00-738d-42cb-9691-3398f439c626" name="obj_1" x="322" y="392">
       <params>
          <frac32.u.map name="vcf3_1:reso" value="0.0"/>
       </params>
@@ -217,13 +217,9 @@ outlet_out = accum;]]></code.srate>
             <params/>
             <attribs/>
          </obj>
-         <obj type="dist/rectifier" uuid="a994d72e4491dedd2655b7a06a4a3f38fcca68d2" name="rectifier_2" x="84" y="14">
-            <params/>
-            <attribs/>
-         </obj>
          <patchobj type="patch/object" uuid="46afc8f5-692e-432c-89a0-e0d3195435fa" name="vcf3_1" x="238" y="112">
             <params>
-               <frac32.s.map name="pitch" value="13.0"/>
+               <frac32.s.map name="pitch" value="12.0"/>
                <frac32.u.map name="reso" onParent="true" value="64.0"/>
             </params>
             <attribs/>
@@ -284,7 +280,7 @@ outlet_out = accum;]]></code.srate>
             </net>
             <net>
                <source obj="in" outlet="inlet"/>
-               <dest obj="rectifier_2" inlet="in"/>
+               <dest obj="vcf3_1" inlet="in"/>
             </net>
             <net>
                <source obj="vcf3_1" outlet="out"/>
@@ -293,10 +289,6 @@ outlet_out = accum;]]></code.srate>
             <net>
                <source obj="inlet_1" outlet="inlet"/>
                <dest obj="smooth_1" inlet="in"/>
-            </net>
-            <net>
-               <source obj="rectifier_2" outlet="out"/>
-               <dest obj="vcf3_1" inlet="in"/>
             </net>
             <net>
                <source obj="reso" outlet="inlet"/>
@@ -308,10 +300,10 @@ outlet_out = accum;]]></code.srate>
          </settings>
          <notes><![CDATA[]]></notes>
          <windowPos>
-            <x>770</x>
-            <y>339</y>
-            <width>660</width>
-            <height>436</height>
+            <x>785</x>
+            <y>132</y>
+            <width>702</width>
+            <height>483</height>
          </windowPos>
          <helpPatch>wah1.axh</helpPatch>
       </subpatch>
@@ -331,9 +323,9 @@ outlet_out = accum;]]></code.srate>
    <nets>
       <net>
          <source obj="audioin" outlet="inlet"/>
-         <dest obj="obj_1" inlet="in"/>
-         <dest obj="RingMod_1" inlet="a"/>
          <dest obj="fdbkcomb_2" inlet="in"/>
+         <dest obj="RingMod_1" inlet="a"/>
+         <dest obj="obj_1" inlet="in"/>
       </net>
       <net>
          <source obj="sine_1" outlet="wave"/>
@@ -342,8 +334,8 @@ outlet_out = accum;]]></code.srate>
       <net>
          <source obj="pitch" outlet="inlet"/>
          <dest obj="mtof_1" inlet="pitch"/>
-         <dest obj="obj_1" inlet="inlet_1"/>
          <dest obj="fdbkcomb_2" inlet="noteheight"/>
+         <dest obj="obj_1" inlet="inlet_1"/>
       </net>
       <net>
          <source obj="obj_1" outlet="out"/>

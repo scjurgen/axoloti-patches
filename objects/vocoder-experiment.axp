@@ -1,0 +1,216 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="audio/inconfig" uuid="9a80ef3c19f2a8f81da3a3b7c1c44d18126b97d9" name="inconfig_1" x="42" y="14">
+      <params/>
+      <attribs>
+         <combo attributeName="gain" selection="-12dB"/>
+         <combo attributeName="boost" selection="Mute"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="sss/fx/vocoderFollow" uuid="fcdbc8e1-edee-4e32-a414-fb8dcae46dbc" name="vocoderFollow_1" x="322" y="28">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="sss/fx/vocoderCombiner" uuid="1a52b95a-a51f-4fbe-a47a-9dc93787eadc" name="vocoderCombiner_1" x="518" y="28">
+      <params>
+         <frac32.u.map name="rise" value="0.0"/>
+         <frac32.u.map name="fall" value="0.0"/>
+         <frac32.u.map name="volume" value="32.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="826" y="28">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-54dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="audio/in left" uuid="d40e60b7641fe75af4d7c91b45bb038aacafc52e" name="in_1" x="70" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="756" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="sss/fx/vocoderAudio" uuid="21730a3d-3973-4f86-9c39-ff28b2299c64" name="vocoderAudio_1" x="182" y="154">
+      <params/>
+      <attribs/>
+   </obj>
+   <nets>
+      <net>
+         <source obj="in_1" outlet="wave"/>
+         <dest obj="vocoderAudio_1" inlet="in"/>
+         <dest obj="vocoderFollow_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out02"/>
+         <dest obj="vocoderCombiner_1" inlet="band01"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out03"/>
+         <dest obj="vocoderCombiner_1" inlet="band02"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out04"/>
+         <dest obj="vocoderCombiner_1" inlet="band03"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out05"/>
+         <dest obj="vocoderCombiner_1" inlet="band04"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out06"/>
+         <dest obj="vocoderCombiner_1" inlet="band05"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out07"/>
+         <dest obj="vocoderCombiner_1" inlet="band06"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out08"/>
+         <dest obj="vocoderCombiner_1" inlet="band07"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out09"/>
+         <dest obj="vocoderCombiner_1" inlet="band08"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out10"/>
+         <dest obj="vocoderCombiner_1" inlet="band09"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out11"/>
+         <dest obj="vocoderCombiner_1" inlet="band10"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out12"/>
+         <dest obj="vocoderCombiner_1" inlet="band11"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out13"/>
+         <dest obj="vocoderCombiner_1" inlet="band12"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out14"/>
+         <dest obj="vocoderCombiner_1" inlet="band13"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out15"/>
+         <dest obj="vocoderCombiner_1" inlet="band14"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out16"/>
+         <dest obj="vocoderCombiner_1" inlet="band15"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out17"/>
+         <dest obj="vocoderCombiner_1" inlet="band16"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out18"/>
+         <dest obj="vocoderCombiner_1" inlet="band17"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out19"/>
+         <dest obj="vocoderCombiner_1" inlet="band18"/>
+      </net>
+      <net>
+         <source obj="vocoderAudio_1" outlet="out20"/>
+         <dest obj="vocoderCombiner_1" inlet="band19"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out02"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl01"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out03"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl02"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out04"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl03"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out05"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl04"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out06"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl05"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out07"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl06"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out08"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl07"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out09"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl08"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out10"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl09"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out11"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl10"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out12"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl11"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out13"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl12"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out14"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl13"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out15"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl14"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out16"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl15"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out17"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl16"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out18"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl17"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out19"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl18"/>
+      </net>
+      <net>
+         <source obj="vocoderFollow_1" outlet="out20"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl20"/>
+         <dest obj="vocoderCombiner_1" inlet="ctrl19"/>
+      </net>
+      <net>
+         <source obj="vocoderCombiner_1" outlet="out"/>
+         <dest obj="out_1" inlet="left"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>0</x>
+      <y>23</y>
+      <width>985</width>
+      <height>868</height>
+   </windowPos>
+</patch-1.0>

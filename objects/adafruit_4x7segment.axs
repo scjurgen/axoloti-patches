@@ -274,7 +274,15 @@ void setPrefix(int val)
 
 initDisplayData();]]></code.init>
          <code.dispose><![CDATA[ada7seg_dispose(&ada7seg_state);]]></code.dispose>
-         <code.krate><![CDATA[static int prevValue = -1;
+         <code.krate><![CDATA[static int waitForIt = 6000;
+if (waitForIt)
+{
+	--waitForIt;
+	if (!waitForIt)
+		LogTextMessage("waiting done");
+	return;
+}
+static int prevValue = -1;
 static int prevDblDot = -1;
 static int prevPrefix = -1;
 
@@ -329,8 +337,8 @@ if (prevDblDot != inlet_dbldot)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>619</x>
-      <y>435</y>
+      <x>89</x>
+      <y>450</y>
       <width>720</width>
       <height>439</height>
    </windowPos>
