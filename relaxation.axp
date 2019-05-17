@@ -1,0 +1,540 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="cpwitz/lfo/tri" uuid="cpwitz-lfo-tri" name="tri_1" x="70" y="28">
+      <params>
+         <frac32.s.map name="pitch" value="-52.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="1246" y="28">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-24dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_1" x="378" y="42">
+      <params>
+         <frac32.s.map name="pitch" value="16.0"/>
+         <frac32.u.map name="reso" value="15.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_1" x="266" y="56">
+      <params>
+         <int32 name="b" value="14"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
+         <sDescription>multiply</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="a" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="result" description="output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="b">
+               <MinValue i="0"/>
+               <MaxValue i="100"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[{
+	outlet_result= inlet_a*param_b/100;
+}]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_3" x="868" y="84">
+      <params>
+         <frac32.s.map name="pitch" value="8.0"/>
+         <frac32.u.map name="reso" value="3.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_2" x="784" y="98">
+      <params>
+         <int32 name="b" value="19"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
+         <sDescription>multiply</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="a" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="result" description="output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="b">
+               <MinValue i="0"/>
+               <MaxValue i="100"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[{
+	outlet_result= inlet_a*param_b/100;
+}]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="1120" y="98">
+      <params>
+         <frac32.u.map name="gain1" value="27.5"/>
+         <frac32.u.map name="gain2" value="64.0"/>
+         <frac32.u.map name="gain3" value="20.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="delay/echo fdbk mix" uuid="15716b14ebe691010ccfd54af72ea23232a843c6" name="echo_1" x="1246" y="126">
+      <params>
+         <frac32.u.map name="mix" value="30.0"/>
+         <frac32.u.map name="feedback" value="23.0"/>
+      </params>
+      <attribs>
+         <spinner attributeName="delaylength" value="9116"/>
+      </attribs>
+   </obj>
+   <obj type="noise/gaussian" uuid="a0f2cae6eafbfa58e1f1cb28e369824c54486f79" name="gaussian_1" x="560" y="140">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="tiar/noise/pink9octs" uuid="26c493af-69c8-4d04-a326-f72d00f8a303" name="pink9octs_1" x="70" y="154">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_2" x="378" y="182">
+      <params>
+         <frac32.s.map name="pitch" value="16.0"/>
+         <frac32.u.map name="reso" value="15.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="noise/gaussian" uuid="a0f2cae6eafbfa58e1f1cb28e369824c54486f79" name="gaussian_2" x="602" y="182">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="1386" y="182">
+      <params/>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_3" x="266" y="196">
+      <params>
+         <int32 name="b" value="14"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
+         <sDescription>multiply</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="a" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="result" description="output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="b">
+               <MinValue i="0"/>
+               <MaxValue i="100"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[outlet_result= inlet_a*param_b/100;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="tiar/noise/pink9octs" uuid="26c493af-69c8-4d04-a326-f72d00f8a303" name="pink9octs_2" x="70" y="238">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_4" x="868" y="238">
+      <params>
+         <frac32.s.map name="pitch" value="13.0"/>
+         <frac32.u.map name="reso" value="1.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_4" x="756" y="252">
+      <params>
+         <int32 name="b" value="18"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
+         <sDescription>multiply</sDescription>
+         <author>Johannes Taelman</author>
+         <license>BSD</license>
+         <helpPatch>math.axh</helpPatch>
+         <inlets>
+            <frac32 name="a" description="input"/>
+         </inlets>
+         <outlets>
+            <frac32 name="result" description="output"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="b">
+               <MinValue i="0"/>
+               <MaxValue i="100"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.krate><![CDATA[outlet_result= inlet_a*param_b/100;]]></code.krate>
+      </object>
+   </patchobj>
+   <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_2" x="1120" y="294">
+      <params>
+         <frac32.u.map name="gain1" value="20.5"/>
+         <frac32.u.map name="gain2" value="64.0"/>
+         <frac32.u.map name="gain3" value="20.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="delay/echo fdbk mix" uuid="15716b14ebe691010ccfd54af72ea23232a843c6" name="echo_2" x="1246" y="322">
+      <params>
+         <frac32.u.map name="mix" value="25.5"/>
+         <frac32.u.map name="feedback" value="27.5"/>
+      </params>
+      <attribs>
+         <spinner attributeName="delaylength" value="5919"/>
+      </attribs>
+   </obj>
+   <obj type="drj/lfo/lfo_pwm_u" uuid="a194a5eb6271343f97d28f75811f4b3a41306813" name="lfo_pwm_u_1" x="154" y="336">
+      <params>
+         <frac32.s.map name="pitch" value="-63.0"/>
+         <frac32.u.map name="pw" value="17.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_1" x="266" y="336">
+      <params>
+         <frac32.u.map name="risetime" value="60.5"/>
+         <frac32.u.map name="falltime" value="60.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_2" x="378" y="336">
+      <params>
+         <frac32.u.map name="risetime" value="56.0"/>
+         <frac32.u.map name="falltime" value="55.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="filter/lp1 m" uuid="18b561d14f9175f5380e6a1d9d55ca41e0e61974" name="lp1_1" x="882" y="392">
+      <params>
+         <frac32.u.map name="freq" value="33.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_3" x="672" y="434">
+      <params>
+         <frac32.u.map name="risetime" value="54.5"/>
+         <frac32.u.map name="falltime" value="54.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_4" x="770" y="434">
+      <params>
+         <frac32.u.map name="risetime" value="58.5"/>
+         <frac32.u.map name="falltime" value="56.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_1" x="882" y="434">
+      <params>
+         <frac32.u.map name="next" value="17.0"/>
+         <frac32.s.map name="ratio" value="0.0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4">
+         <sDescription>shot dirac</sDescription>
+         <inlets/>
+         <outlets>
+            <frac32buffer name="o1"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.u.map name="next"/>
+            <frac32.s.map.ratio name="ratio"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[#define TBLSIZE 16384
+int32_t *waveTable;
+int32_t nextShot=0;
+int32_t step=-1;
+float fade;
+int32_t dtStep;
+int32_t currentPos;]]></code.declaration>
+         <code.init><![CDATA[static int32_t _waveTable[TBLSIZE]  __attribute__ ((section (".sdram")));
+waveTable = &_waveTable[0];
+auto sz = sizeof(waveTable)/sizeof(waveTable[0]);
+
+for (int i=0; i < TBLSIZE; ++i)
+{
+	waveTable[i] = float_to_q27(1.0*sinf(M_PI*2.0*i/TBLSIZE));
+}]]></code.init>
+         <code.srate><![CDATA[if (nextShot)
+	{
+		nextShot--;
+	}
+	else
+	{
+		currentPos = rand()%20;
+		step = 0;
+		//fade = 1.0;
+		fade = (float)rand()/RAND_MAX/2.0 + 0.5;
+		dtStep = 500+rand() % 50;
+		int32_t distance = 2000*q27_to_float(param_next) + 1;
+		nextShot += (rand()%distance)+5;
+	}
+	if (step == -1)
+	{
+		outlet_o1 =  0;
+	}
+	else
+	{
+		step++;
+		fade=fade*0.995;
+		if (step == 350)
+			step = -1;
+		currentPos += dtStep;
+		if (currentPos >= TBLSIZE)
+			currentPos -= TBLSIZE;
+		outlet_o1 = fade * waveTable[currentPos];
+	}]]></code.srate>
+      </object>
+   </patchobj>
+   <obj type="drj/lfo/lfo_pwm_u" uuid="a194a5eb6271343f97d28f75811f4b3a41306813" name="lfo_pwm_u_2" x="518" y="462">
+      <params>
+         <frac32.s.map name="pitch" value="-58.0"/>
+         <frac32.u.map name="pw" value="8.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="TSG/fx/reverb" uuid="02bf8303-0040-4302-98e3-f46a37448478" name="obj_1" x="1092" y="476">
+      <params>
+         <frac32.u.map name="PreDelay" value="22.0"/>
+         <frac32.u.map name="decay" value="44.0"/>
+         <frac32.u.map name="LowDamp" value="16.5"/>
+         <frac32.u.map name="HighDamp" value="30.5"/>
+         <frac32.u.map name="size" value="64.0"/>
+         <frac32.s.map name="mod_:pitch" value="-64.0"/>
+         <frac32.u.map name="mod_:gain" value="58.5"/>
+         <frac32.u.map name="diffusion" value="51.5"/>
+         <frac32.u.map name="mix" value="51.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="filter/lp1 m" uuid="18b561d14f9175f5380e6a1d9d55ca41e0e61974" name="lp1_2" x="1008" y="532">
+      <params>
+         <frac32.u.map name="freq" value="34.5"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_2" x="896" y="602">
+      <params>
+         <frac32.u.map name="next" value="19.5"/>
+         <frac32.s.map name="ratio" value="0.0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4">
+         <sDescription>shot dirac</sDescription>
+         <inlets/>
+         <outlets>
+            <frac32buffer name="o1"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.u.map name="next"/>
+            <frac32.s.map.ratio name="ratio"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[#define TBLSIZE 16384
+int32_t *waveTable;
+int32_t nextShot=0;
+int32_t step=-1;
+float fade;
+int32_t dtStep;
+int32_t currentPos;]]></code.declaration>
+         <code.init><![CDATA[static int32_t _waveTable[TBLSIZE]  __attribute__ ((section (".sdram")));
+waveTable = &_waveTable[0];
+auto sz = sizeof(waveTable)/sizeof(waveTable[0]);
+
+for (int i=0; i < TBLSIZE; ++i)
+{
+	waveTable[i] = float_to_q27(1.0*sinf(M_PI*2.0*i/TBLSIZE));
+}]]></code.init>
+         <code.srate><![CDATA[if (nextShot)
+	{
+		nextShot--;
+	}
+	else
+	{
+		currentPos = rand()%20;
+		step = 0;
+		//fade = 1.0;
+		fade = (float)rand()/RAND_MAX/2.0 + 0.5;
+		dtStep = 500+rand() % 50;
+		int32_t distance = 2000*q27_to_float(param_next) + 1;
+		nextShot += (rand()%distance)+5;
+	}
+	if (step == -1)
+	{
+		outlet_o1 =  0;
+	}
+	else
+	{
+		step++;
+		fade=fade*0.995;
+		if (step == 350)
+			step = -1;
+		currentPos += dtStep;
+		if (currentPos >= TBLSIZE)
+			currentPos -= TBLSIZE;
+		outlet_o1 = fade * waveTable[currentPos];
+	}]]></code.srate>
+      </object>
+   </patchobj>
+   <nets>
+      <net>
+         <source obj="mix_2" outlet="out"/>
+         <dest obj="echo_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="mix_1" outlet="out"/>
+         <dest obj="echo_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="pink9octs_1" outlet="out"/>
+         <dest obj="mix_2" inlet="in3"/>
+         <dest obj="vcf3_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="pink9octs_2" outlet="out"/>
+         <dest obj="mix_1" inlet="in3"/>
+         <dest obj="vcf3_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="vcf3_1" outlet="out"/>
+         <dest obj="mix_1" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="vcf3_2" outlet="out"/>
+         <dest obj="mix_2" inlet="in2"/>
+      </net>
+      <net>
+         <source obj="*_1" outlet="result"/>
+         <dest obj="vcf3_1" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="*_3" outlet="result"/>
+         <dest obj="vcf3_2" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="smooth2_1" outlet="out"/>
+         <dest obj="*_1" inlet="a"/>
+      </net>
+      <net>
+         <source obj="lfo_pwm_u_1" outlet="pwm"/>
+         <dest obj="smooth2_1" inlet="in"/>
+         <dest obj="smooth2_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="smooth2_2" outlet="out"/>
+         <dest obj="*_3" inlet="a"/>
+      </net>
+      <net>
+         <source obj="*_2" outlet="result"/>
+         <dest obj="vcf3_3" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="*_4" outlet="result"/>
+         <dest obj="vcf3_4" inlet="pitch"/>
+      </net>
+      <net>
+         <source obj="smooth2_3" outlet="out"/>
+         <dest obj="*_2" inlet="a"/>
+      </net>
+      <net>
+         <source obj="lfo_pwm_u_2" outlet="pwm"/>
+         <dest obj="smooth2_3" inlet="in"/>
+         <dest obj="smooth2_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="smooth2_4" outlet="out"/>
+         <dest obj="*_4" inlet="a"/>
+         <dest obj="lp1_2" inlet="freq"/>
+      </net>
+      <net>
+         <source obj="vcf3_3" outlet="out"/>
+         <dest obj="mix_1" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="vcf3_4" outlet="out"/>
+         <dest obj="mix_2" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="gaussian_1" outlet="wave"/>
+         <dest obj="vcf3_3" inlet="in"/>
+      </net>
+      <net>
+         <source obj="gaussian_2" outlet="wave"/>
+         <dest obj="vcf3_4" inlet="in"/>
+      </net>
+      <net>
+         <source obj="echo_2" outlet="out"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+      <net>
+         <source obj="echo_1" outlet="out"/>
+         <dest obj="out_1" inlet="left"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="o1"/>
+         <dest obj="lp1_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="lp1_1" outlet="out"/>
+         <dest obj="obj_1" inlet="InL"/>
+      </net>
+      <net>
+         <source obj="object_2" outlet="o1"/>
+         <dest obj="lp1_2" inlet="in"/>
+      </net>
+      <net>
+         <source obj="lp1_2" outlet="out"/>
+         <dest obj="obj_1" inlet="InR"/>
+      </net>
+      <net>
+         <source obj="obj_1" outlet="l"/>
+         <dest obj="mix_1" inlet="bus_in"/>
+      </net>
+      <net>
+         <source obj="obj_1" outlet="r"/>
+         <dest obj="mix_2" inlet="bus_in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>153</x>
+      <y>46</y>
+      <width>1652</width>
+      <height>863</height>
+   </windowPos>
+</patch-1.0>
