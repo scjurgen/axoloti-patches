@@ -1,0 +1,170 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="audio/outconfig" uuid="eace67e3304afaa1bb695b444e9345f2d8adaf00" name="outconfig_1" x="434" y="0">
+      <params/>
+      <attribs>
+         <combo attributeName="headphones" selection="-36dB"/>
+         <combo attributeName="mode" selection="Stereo"/>
+      </attribs>
+   </obj>
+   <obj type="osc/brds/blown" uuid="1185d86b-5be7-429f-8788-e26868c65a82" name="blown_1" x="70" y="14">
+      <params>
+         <frac32.s.map name="pitch" value="0.0"/>
+         <frac32.u.map name="timbre" value="64.0"/>
+         <frac32.u.map name="color" value="64.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="osc/sine lin" uuid="6a4458d598c9b8634b469d1a6e7f87971b5932f" name="sine_1" x="210" y="28">
+      <params>
+         <frac32.u.map name="freq" value="0.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="azaxo/mix/mixer1mod" uuid="b504d237-e677-4af2-842b-32bda1cf55cf" name="mixer1mod_1" x="336" y="56">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="audio/out stereo" uuid="a1ca7a567f535acc21055669829101d3ee7f0189" name="out_1" x="504" y="56">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_1" x="252" y="154">
+      <params>
+         <frac32.u.map name="risetime" value="5.0"/>
+         <frac32.u.map name="falltime" value="6.0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="ctrl/button" uuid="ef3d13774349df85aa9bfecf30dbc91ab8488b3f" name="button_1" x="0" y="210">
+      <params>
+         <bool32.mom name="b" value="0"/>
+      </params>
+      <attribs/>
+   </obj>
+   <patchobj type="patch/object" uuid="b210e769-2ea9-47df-a0a8-92e2d766110f" name="object_1" x="84" y="224">
+      <params>
+         <int32 name="pulseWidth" value="67"/>
+         <int32 name="pwm100" value="5"/>
+         <int32 name="count" value="4"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="b210e769-2ea9-47df-a0a8-92e2d766110f">
+         <sDescription>pulse burst</sDescription>
+         <author>JS</author>
+         <license>BSD</license>
+         <inlets>
+            <bool32.rising name="trigger"/>
+            <int32 name="pulseWidth"/>
+            <int32 name="pwm100"/>
+            <int32 name="count"/>
+         </inlets>
+         <outlets>
+            <frac32 name="pulseq27"/>
+            <bool32.pulse name="pulse"/>
+            <bool32.pulse name="done"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="pulseWidth">
+               <MinValue i="-10000"/>
+               <MaxValue i="10000"/>
+            </int32>
+            <int32 name="pwm100">
+               <MinValue i="0"/>
+               <MaxValue i="100"/>
+            </int32>
+            <int32 name="count">
+               <MinValue i="-100"/>
+               <MaxValue i="100"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[int pulseCount=0;
+int pulseState=0;
+int pulseCountDown=0;]]></code.declaration>
+         <code.krate><![CDATA[if (pulseState == 0)
+{
+}
+
+switch(pulseState)
+{
+	case 0:
+		if (inlet_trigger)
+		{
+			pulseCount = inlet_count+param_count-1;
+			if (pulseCount < 0)
+				break;
+			pulseState = 1;
+			pulseCountDown = (inlet_pulseWidth+param_pulseWidth)*param_pwm100/100;
+			outlet_pulse = true;
+		}
+		break;
+	case 1:
+		if (--pulseCountDown < 0)
+		{
+			pulseState=2;
+			pulseCountDown = (inlet_pulseWidth + param_pulseWidth)*(100-param_pwm100)/100;
+			outlet_pulse = false;
+		}
+		break;
+	case 2:
+		if (--pulseCountDown < 0)
+		{
+			if (--pulseCount <0)
+			{
+				pulseState = 0;
+				outlet_done = true;
+			}
+			else
+			{
+				pulseState=1;
+				pulseCountDown = (inlet_pulseWidth+param_pulseWidth)*param_pwm100/100;
+				outlet_pulse = true;
+			}
+		}
+		break;
+}
+
+if (pulseState == 1)
+	outlet_pulseq27 = 1<<27;
+else
+	outlet_pulseq27 = 0;]]></code.krate>
+      </object>
+   </patchobj>
+   <nets>
+      <net>
+         <source obj="mixer1mod_1" outlet="out"/>
+         <dest obj="out_1" inlet="left"/>
+         <dest obj="out_1" inlet="right"/>
+      </net>
+      <net>
+         <source obj="smooth2_1" outlet="out"/>
+         <dest obj="mixer1mod_1" inlet="gain1"/>
+         <dest obj="sine_1" inlet="freq"/>
+      </net>
+      <net>
+         <source obj="button_1" outlet="o"/>
+         <dest obj="blown_1" inlet="strike"/>
+         <dest obj="object_1" inlet="trigger"/>
+      </net>
+      <net>
+         <source obj="sine_1" outlet="wave"/>
+         <dest obj="mixer1mod_1" inlet="in1"/>
+      </net>
+      <net>
+         <source obj="object_1" outlet="pulseq27"/>
+         <dest obj="smooth2_1" inlet="in"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>121</x>
+      <y>273</y>
+      <width>765</width>
+      <height>602</height>
+   </windowPos>
+</patch-1.0>

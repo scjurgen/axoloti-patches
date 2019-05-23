@@ -14,14 +14,14 @@
    </obj>
    <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_1" x="378" y="42">
       <params>
-         <frac32.s.map name="pitch" value="16.0"/>
-         <frac32.u.map name="reso" value="15.5"/>
+         <frac32.s.map name="pitch" value="26.0"/>
+         <frac32.u.map name="reso" value="26.0"/>
       </params>
       <attribs/>
    </obj>
    <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_1" x="266" y="56">
       <params>
-         <int32 name="b" value="14"/>
+         <int32 name="b" value="12"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
@@ -51,14 +51,14 @@
    </patchobj>
    <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_3" x="868" y="84">
       <params>
-         <frac32.s.map name="pitch" value="8.0"/>
-         <frac32.u.map name="reso" value="3.5"/>
+         <frac32.s.map name="pitch" value="21.0"/>
+         <frac32.u.map name="reso" value="29.5"/>
       </params>
       <attribs/>
    </obj>
    <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_2" x="784" y="98">
       <params>
-         <int32 name="b" value="19"/>
+         <int32 name="b" value="14"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
@@ -88,9 +88,9 @@
    </patchobj>
    <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_1" x="1120" y="98">
       <params>
-         <frac32.u.map name="gain1" value="27.5"/>
+         <frac32.u.map name="gain1" value="39.5"/>
          <frac32.u.map name="gain2" value="64.0"/>
-         <frac32.u.map name="gain3" value="20.0"/>
+         <frac32.u.map name="gain3" value="44.0"/>
       </params>
       <attribs/>
    </obj>
@@ -113,8 +113,8 @@
    </obj>
    <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_2" x="378" y="182">
       <params>
-         <frac32.s.map name="pitch" value="16.0"/>
-         <frac32.u.map name="reso" value="15.0"/>
+         <frac32.s.map name="pitch" value="26.0"/>
+         <frac32.u.map name="reso" value="28.0"/>
       </params>
       <attribs/>
    </obj>
@@ -160,14 +160,14 @@
    </obj>
    <obj type="filter/vcf3" uuid="92455c652cd098cbb682a5497baa18abbf2ef865" name="vcf3_4" x="868" y="238">
       <params>
-         <frac32.s.map name="pitch" value="13.0"/>
-         <frac32.u.map name="reso" value="1.0"/>
+         <frac32.s.map name="pitch" value="40.0"/>
+         <frac32.u.map name="reso" value="30.0"/>
       </params>
       <attribs/>
    </obj>
    <patchobj type="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad" name="*_4" x="756" y="252">
       <params>
-         <int32 name="b" value="18"/>
+         <int32 name="b" value="14"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="96bb2895-c62b-4514-9b59-eb09407dcfad">
@@ -195,66 +195,479 @@
    </patchobj>
    <obj type="mix/mix 3 g" uuid="efc0bdb8ca0ec2184330951eff5203ff487e35a9" name="mix_2" x="1120" y="294">
       <params>
-         <frac32.u.map name="gain1" value="20.5"/>
+         <frac32.u.map name="gain1" value="34.5"/>
          <frac32.u.map name="gain2" value="64.0"/>
-         <frac32.u.map name="gain3" value="20.0"/>
+         <frac32.u.map name="gain3" value="40.5"/>
       </params>
       <attribs/>
    </obj>
+   <patchobj type="patch/object" uuid="d7c4bb3b-64e7-422f-a499-ea90312f90c9" name="object_6" x="56" y="308">
+      <params>
+         <frac32.u.map name="p1" value="2.0"/>
+         <frac32.u.map name="p2" value="8.0"/>
+         <frac32.u.map name="p3" value="0.0"/>
+         <frac32.u.map name="p4" value="2.0"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="d7c4bb3b-64e7-422f-a499-ea90312f90c9">
+         <inlets/>
+         <outlets>
+            <frac32 name="val"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.u.map name="p1"/>
+            <frac32.u.map name="p2"/>
+            <frac32.u.map name="p3"/>
+            <frac32.u.map name="p4"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[class TidalWaveFp
+{
+  // 4 states, cyclic running through
+  enum Phase {CALM, FLOW, HOLD, EBB};
+
+public:
+  const int32_t sampleRate = 3000;
+
+  TidalWaveFp()
+          : attackTimeInKRate(3000)
+            , holdTimeInKRate(1000)
+            , releaseTimeInKRate(3000)
+            , silentTimeInKRate(1000)
+            , nextFlowTicks(0)
+            , currentValue(0)
+            , phase(CALM)
+  {
+    calculateFactors();
+    LogTextMessage("tidal wave ready");
+  }
+
+  int getShiftTo1(uint32_t v) const
+  {
+    int s=0;
+    uint32_t one = 1U << 31;
+    if (v==0)
+    	return 0;
+    while (v < one && s < 30)
+    {
+      s++;
+      v<<=1;
+    }
+    return s-1;
+    return 0;
+  }
+
+  int64_t getShifted(uint32_t v, int32_t &shft) const
+  {
+
+    shft = getShiftTo1(v);
+    LogTextMessage("v=%lu << %d", v, shft);
+    if (shft > 0)
+      return v << shft;
+    else
+      return v >> -shft;
+  }
+
+  void calculateFactors()
+  {
+    attackFactor = getShifted((1u<<31)/attackTimeInKRate, shiftAttack);
+    releaseFactor = getShifted((1u<<31)/releaseTimeInKRate, shiftRelease);
+    getShifted(attackTimeInKRate, shiftMaxAttack);
+    getShifted(releaseTimeInKRate, shiftMaxRelease);
+  }
+  
+  void setAttackTimeParam(int32_t num)
+  {
+    if (attackTimeInParam != num)
+    {
+      attackTimeInParam = num;
+      attackTimeInKRate = q27_to_float(num)*64*3000;
+      calculateFactors();
+    }
+  }
+
+  void setAttackTimeInKRate(int32_t numKrate)
+  {
+    if (attackTimeInKRate != numKrate)
+    {
+      attackTimeInKRate = numKrate;
+      calculateFactors();
+    }
+  }
+  void setReleaseTimeParam(int32_t num)
+  {
+    if (releaseTimeInParam != num)
+    {
+      releaseTimeInParam = num;
+      releaseTimeInKRate = q27_to_float(num)*64*3000;
+      calculateFactors();
+    }
+  }
+
+  void setReleaseTimeInKRate(int32_t numKrate)
+  {
+    if (releaseTimeInKRate != numKrate)
+    {
+      releaseTimeInKRate = numKrate;
+      calculateFactors();
+    }
+  }
+  void setHoldTimeParam(int32_t num)
+  {
+    if (holdTimeInParam != num)
+    {
+      holdTimeInParam = num;
+      holdTimeInKRate = q27_to_float(num)*64*3000;
+    }
+  }
+
+  void setHoldTimeInKRate(int32_t numKrate)
+  {
+    if (holdTimeInKRate != numKrate)
+    {
+      holdTimeInKRate = numKrate;
+    }
+  }
+  void setSilentTimeParam(int32_t num)
+  {
+    if (silentTimeInParam != num)
+    {
+      silentTimeInParam = num;
+      silentTimeInKRate = q27_to_float(num)*64*3000;
+    }
+  }
+  void setSilentTimeInKRate(int32_t numKrate)
+  {
+    if (silentTimeInKRate != numKrate)
+    {
+      silentTimeInKRate = numKrate;
+    }
+  }
+
+  bool wholeCycleDone() // not const
+  {
+    if (cycleDone)
+    {
+      cycleDone=false;
+      return true;
+    }
+    return false;
+  }
+
+  int32_t step()
+  {
+    if (--nextFlowTicks < 0)
+    {
+      switch(phase)
+      {
+        case CALM:
+          nextFlowTicks = attackTimeInKRate-1;
+          phase = FLOW;
+          break;
+        case FLOW:
+          nextFlowTicks = holdTimeInKRate-1;
+          phase = HOLD;
+          break;
+        case HOLD:
+          nextFlowTicks = releaseTimeInKRate-1;
+          phase = EBB;
+          break;
+        case EBB:
+          nextFlowTicks = silentTimeInKRate-1;
+          phase = CALM;
+          cycleDone = true;
+          break;
+      }
+    }
+    int32_t val;
+    switch(phase)
+    {
+      case CALM:
+        return 0;
+      case FLOW:
+        val = ___SMMUL(nextFlowTicks<<shiftMaxAttack, attackFactor)>>2;
+        return (1<<27)-val;
+      case HOLD:
+        return (1<<27);
+      case EBB:
+        val = ___SMMUL(nextFlowTicks<<shiftMaxRelease, releaseFactor)>>2;
+        return val;
+    }
+    return 0;
+  }
+private:
+  int32_t attackTimeInKRate;
+  int32_t attackTimeInParam;
+  int32_t shiftAttack;
+  int32_t holdTimeInKRate;
+  int32_t holdTimeInParam;
+  int32_t releaseTimeInKRate;
+  int32_t releaseTimeInParam;
+  int32_t shiftRelease;
+  int32_t silentTimeInKRate;
+  int32_t silentTimeInParam;
+  int32_t nextFlowTicks;
+  Phase phase;
+  int32_t attackFactor;
+  int32_t releaseFactor;
+  int32_t shiftMaxAttack;
+  int32_t shiftMaxRelease;
+  int32_t currentValue;
+  bool cycleDone;
+};
+
+TidalWaveFp tw;]]></code.declaration>
+         <code.krate><![CDATA[outlet_val = tw.step();
+
+
+tw.setAttackTimeParam(param_p1);
+tw.setReleaseTimeParam(param_p2);
+tw.setHoldTimeParam(param_p3);
+tw.setSilentTimeParam(param_p4);]]></code.krate>
+      </object>
+   </patchobj>
    <obj type="delay/echo fdbk mix" uuid="15716b14ebe691010ccfd54af72ea23232a843c6" name="echo_2" x="1246" y="322">
       <params>
-         <frac32.u.map name="mix" value="25.5"/>
+         <frac32.u.map name="mix" value="20.5"/>
          <frac32.u.map name="feedback" value="27.5"/>
       </params>
       <attribs>
          <spinner attributeName="delaylength" value="5919"/>
       </attribs>
    </obj>
-   <obj type="drj/lfo/lfo_pwm_u" uuid="a194a5eb6271343f97d28f75811f4b3a41306813" name="lfo_pwm_u_1" x="154" y="336">
+   <patchobj type="patch/object" uuid="d7c4bb3b-64e7-422f-a499-ea90312f90c9" name="object_5" x="518" y="336">
       <params>
-         <frac32.s.map name="pitch" value="-63.0"/>
-         <frac32.u.map name="pw" value="17.0"/>
+         <frac32.u.map name="p1" value="2.0"/>
+         <frac32.u.map name="p2" value="2.5"/>
+         <frac32.u.map name="p3" value="2.5"/>
+         <frac32.u.map name="p4" value="0.5"/>
       </params>
       <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_1" x="266" y="336">
+      <object id="patch/object" uuid="d7c4bb3b-64e7-422f-a499-ea90312f90c9">
+         <inlets/>
+         <outlets>
+            <frac32 name="val"/>
+         </outlets>
+         <displays/>
+         <params>
+            <frac32.u.map name="p1"/>
+            <frac32.u.map name="p2"/>
+            <frac32.u.map name="p3"/>
+            <frac32.u.map name="p4"/>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[class TidalWaveFp
+{
+  // 4 states, cyclic running through
+  enum Phase {CALM, FLOW, HOLD, EBB};
+
+public:
+  const int32_t sampleRate = 3000;
+
+  TidalWaveFp()
+          : attackTimeInKRate(3000)
+            , holdTimeInKRate(1000)
+            , releaseTimeInKRate(3000)
+            , silentTimeInKRate(1000)
+            , nextFlowTicks(0)
+            , currentValue(0)
+            , phase(CALM)
+  {
+    calculateFactors();
+    LogTextMessage("tidal wave ready");
+  }
+
+  int getShiftTo1(uint32_t v) const
+  {
+    int s=0;
+    uint32_t one = 1U << 31;
+    if (v==0)
+    	return 0;
+    while (v < one && s < 30)
+    {
+      s++;
+      v<<=1;
+    }
+    return s-1;
+    return 0;
+  }
+
+  int64_t getShifted(uint32_t v, int32_t &shft) const
+  {
+
+    shft = getShiftTo1(v);
+    LogTextMessage("v=%lu << %d", v, shft);
+    if (shft > 0)
+      return v << shft;
+    else
+      return v >> -shft;
+  }
+
+  void calculateFactors()
+  {
+    attackFactor = getShifted((1u<<31)/attackTimeInKRate, shiftAttack);
+    releaseFactor = getShifted((1u<<31)/releaseTimeInKRate, shiftRelease);
+    getShifted(attackTimeInKRate, shiftMaxAttack);
+    getShifted(releaseTimeInKRate, shiftMaxRelease);
+  }
+  
+  void setAttackTimeParam(int32_t num)
+  {
+    if (attackTimeInParam != num)
+    {
+      attackTimeInParam = num;
+      attackTimeInKRate = q27_to_float(num)*64*3000;
+      calculateFactors();
+    }
+  }
+
+  void setAttackTimeInKRate(int32_t numKrate)
+  {
+    if (attackTimeInKRate != numKrate)
+    {
+      attackTimeInKRate = numKrate;
+      calculateFactors();
+    }
+  }
+  void setReleaseTimeParam(int32_t num)
+  {
+    if (releaseTimeInParam != num)
+    {
+      releaseTimeInParam = num;
+      releaseTimeInKRate = q27_to_float(num)*64*3000;
+      calculateFactors();
+    }
+  }
+
+  void setReleaseTimeInKRate(int32_t numKrate)
+  {
+    if (releaseTimeInKRate != numKrate)
+    {
+      releaseTimeInKRate = numKrate;
+      calculateFactors();
+    }
+  }
+  void setHoldTimeParam(int32_t num)
+  {
+    if (holdTimeInParam != num)
+    {
+      holdTimeInParam = num;
+      holdTimeInKRate = q27_to_float(num)*64*3000;
+    }
+  }
+
+  void setHoldTimeInKRate(int32_t numKrate)
+  {
+    if (holdTimeInKRate != numKrate)
+    {
+      holdTimeInKRate = numKrate;
+    }
+  }
+  void setSilentTimeParam(int32_t num)
+  {
+    if (silentTimeInParam != num)
+    {
+      silentTimeInParam = num;
+      silentTimeInKRate = q27_to_float(num)*64*3000;
+    }
+  }
+  void setSilentTimeInKRate(int32_t numKrate)
+  {
+    if (silentTimeInKRate != numKrate)
+    {
+      silentTimeInKRate = numKrate;
+    }
+  }
+
+  bool wholeCycleDone() // not const
+  {
+    if (cycleDone)
+    {
+      cycleDone=false;
+      return true;
+    }
+    return false;
+  }
+
+  int32_t step()
+  {
+    if (--nextFlowTicks < 0)
+    {
+      switch(phase)
+      {
+        case CALM:
+          nextFlowTicks = attackTimeInKRate-1;
+          phase = FLOW;
+          break;
+        case FLOW:
+          nextFlowTicks = holdTimeInKRate-1;
+          phase = HOLD;
+          break;
+        case HOLD:
+          nextFlowTicks = releaseTimeInKRate-1;
+          phase = EBB;
+          break;
+        case EBB:
+          nextFlowTicks = silentTimeInKRate-1;
+          phase = CALM;
+          cycleDone = true;
+          break;
+      }
+    }
+    int32_t val;
+    switch(phase)
+    {
+      case CALM:
+        return 0;
+      case FLOW:
+        val = ___SMMUL(nextFlowTicks<<shiftMaxAttack, attackFactor)>>2;
+        return (1<<27)-val;
+      case HOLD:
+        return (1<<27);
+      case EBB:
+        val = ___SMMUL(nextFlowTicks<<shiftMaxRelease, releaseFactor)>>2;
+        return val;
+    }
+    return 0;
+  }
+private:
+  int32_t attackTimeInKRate;
+  int32_t attackTimeInParam;
+  int32_t shiftAttack;
+  int32_t holdTimeInKRate;
+  int32_t holdTimeInParam;
+  int32_t releaseTimeInKRate;
+  int32_t releaseTimeInParam;
+  int32_t shiftRelease;
+  int32_t silentTimeInKRate;
+  int32_t silentTimeInParam;
+  int32_t nextFlowTicks;
+  Phase phase;
+  int32_t attackFactor;
+  int32_t releaseFactor;
+  int32_t shiftMaxAttack;
+  int32_t shiftMaxRelease;
+  int32_t currentValue;
+  bool cycleDone;
+};
+
+TidalWaveFp tw;]]></code.declaration>
+         <code.krate><![CDATA[outlet_val = tw.step();
+
+
+tw.setAttackTimeParam(param_p1);
+tw.setReleaseTimeParam(param_p2);
+tw.setHoldTimeParam(param_p3);
+tw.setSilentTimeParam(param_p4);]]></code.krate>
+      </object>
+   </patchobj>
+   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_3" x="798" y="406">
       <params>
-         <frac32.u.map name="risetime" value="60.5"/>
-         <frac32.u.map name="falltime" value="60.5"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_2" x="378" y="336">
-      <params>
-         <frac32.u.map name="risetime" value="56.0"/>
-         <frac32.u.map name="falltime" value="55.5"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="filter/lp1 m" uuid="18b561d14f9175f5380e6a1d9d55ca41e0e61974" name="lp1_1" x="882" y="392">
-      <params>
-         <frac32.u.map name="freq" value="33.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_3" x="672" y="434">
-      <params>
-         <frac32.u.map name="risetime" value="54.5"/>
-         <frac32.u.map name="falltime" value="54.0"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="math/smooth2" uuid="9ba3ddec912512e6b63211080e89cb25b6d84834" name="smooth2_4" x="770" y="434">
-      <params>
-         <frac32.u.map name="risetime" value="58.5"/>
-         <frac32.u.map name="falltime" value="56.5"/>
-      </params>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_1" x="882" y="434">
-      <params>
-         <frac32.u.map name="next" value="17.0"/>
-         <frac32.s.map name="ratio" value="0.0"/>
+         <frac32.u.map name="next" value="6.0"/>
+         <frac32.u.map name="ratio" value="7.0"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4">
@@ -266,87 +679,96 @@
          <displays/>
          <params>
             <frac32.u.map name="next"/>
-            <frac32.s.map.ratio name="ratio"/>
+            <frac32.u.map name="ratio"/>
          </params>
          <attribs/>
          <includes/>
          <code.declaration><![CDATA[#define TBLSIZE 16384
+#define ENVELOPETBLSIZE 1000
+
 int32_t *waveTable;
-int32_t nextShot=0;
-int32_t step=-1;
-float fade;
+int32_t *envelopeTable;
+int32_t nextShot = 0;
+int32_t step = -1;
+int32_t maxStep = 50;
 int32_t dtStep;
-int32_t currentPos;]]></code.declaration>
+int32_t currentPos;
+int32_t volume = 0;]]></code.declaration>
          <code.init><![CDATA[static int32_t _waveTable[TBLSIZE]  __attribute__ ((section (".sdram")));
 waveTable = &_waveTable[0];
-auto sz = sizeof(waveTable)/sizeof(waveTable[0]);
+
+static int32_t _envelopeTable[ENVELOPETBLSIZE]  __attribute__ ((section (".sdram")));
+envelopeTable = &_envelopeTable[0];
+
 
 for (int i=0; i < TBLSIZE; ++i)
 {
 	waveTable[i] = float_to_q27(1.0*sinf(M_PI*2.0*i/TBLSIZE));
+}
+int attack = ENVELOPETBLSIZE/5;
+for (int i=0; i < attack; ++i)
+{
+	envelopeTable[i] = float_to_q27((float)i/attack);
+}
+
+for (int i=attack; i < ENVELOPETBLSIZE; ++i)
+{
+	envelopeTable[i] = float_to_q27((float)(ENVELOPETBLSIZE-(i-attack))/(ENVELOPETBLSIZE-attack));
 }]]></code.init>
          <code.srate><![CDATA[if (nextShot)
-	{
-		nextShot--;
-	}
-	else
-	{
-		currentPos = rand()%20;
-		step = 0;
-		//fade = 1.0;
-		fade = (float)rand()/RAND_MAX/2.0 + 0.5;
-		dtStep = 500+rand() % 50;
-		int32_t distance = 2000*q27_to_float(param_next) + 1;
-		nextShot += (rand()%distance)+5;
-	}
-	if (step == -1)
-	{
-		outlet_o1 =  0;
-	}
-	else
-	{
-		step++;
-		fade=fade*0.995;
-		if (step == 350)
-			step = -1;
-		currentPos += dtStep;
-		if (currentPos >= TBLSIZE)
-			currentPos -= TBLSIZE;
-		outlet_o1 = fade * waveTable[currentPos];
-	}]]></code.srate>
+{
+	nextShot--;
+}
+else
+{
+	currentPos = rand()%20;
+	step = 0;
+	//fade = 1.0;
+	// f=5-7 samples = 6..8khz
+	dtStep = 3277+rand() % (4000);
+	dtStep = dtStep*q27_to_float(param_ratio);
+	maxStep = 50/q27_to_float(param_ratio);
+	float vol = (float)rand()/RAND_MAX;
+	vol=vol*vol*vol*vol;
+	volume = vol*32;
+	int32_t distance = 2000*q27_to_float(param_next+1) + 1;
+	nextShot += (rand()%distance)+5;
+}
+if (step == -1)
+{
+	outlet_o1 =  0;
+}
+else
+{
+	currentPos += dtStep;
+	if (currentPos >= TBLSIZE)
+		currentPos -= TBLSIZE;
+	auto envValue = envelopeTable[step*ENVELOPETBLSIZE/maxStep];
+	outlet_o1 = volume*___SMMUL(envValue,waveTable[currentPos]);
+	step++;
+	if (step >= maxStep)
+		step = -1;
+}]]></code.srate>
       </object>
    </patchobj>
-   <obj type="drj/lfo/lfo_pwm_u" uuid="a194a5eb6271343f97d28f75811f4b3a41306813" name="lfo_pwm_u_2" x="518" y="462">
+   <obj type="TSG/fx/reverb" uuid="02bf8303-0040-4302-98e3-f46a37448478" name="obj_2" x="924" y="406">
       <params>
-         <frac32.s.map name="pitch" value="-58.0"/>
-         <frac32.u.map name="pw" value="8.5"/>
-      </params>
-      <attribs/>
-   </obj>
-   <obj type="TSG/fx/reverb" uuid="02bf8303-0040-4302-98e3-f46a37448478" name="obj_1" x="1092" y="476">
-      <params>
-         <frac32.u.map name="PreDelay" value="22.0"/>
+         <frac32.u.map name="PreDelay" value="22.5"/>
          <frac32.u.map name="decay" value="44.0"/>
-         <frac32.u.map name="LowDamp" value="16.5"/>
-         <frac32.u.map name="HighDamp" value="30.5"/>
-         <frac32.u.map name="size" value="64.0"/>
+         <frac32.u.map name="LowDamp" value="36.0"/>
+         <frac32.u.map name="HighDamp" value="36.0"/>
+         <frac32.u.map name="size" value="21.5"/>
          <frac32.s.map name="mod_:pitch" value="-64.0"/>
          <frac32.u.map name="mod_:gain" value="58.5"/>
          <frac32.u.map name="diffusion" value="51.5"/>
-         <frac32.u.map name="mix" value="51.0"/>
+         <frac32.u.map name="mix" value="43.0"/>
       </params>
       <attribs/>
    </obj>
-   <obj type="filter/lp1 m" uuid="18b561d14f9175f5380e6a1d9d55ca41e0e61974" name="lp1_2" x="1008" y="532">
+   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_4" x="798" y="574">
       <params>
-         <frac32.u.map name="freq" value="34.5"/>
-      </params>
-      <attribs/>
-   </obj>
-   <patchobj type="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4" name="object_2" x="896" y="602">
-      <params>
-         <frac32.u.map name="next" value="19.5"/>
-         <frac32.s.map name="ratio" value="0.0"/>
+         <frac32.u.map name="next" value="7.5"/>
+         <frac32.u.map name="ratio" value="4.0"/>
       </params>
       <attribs/>
       <object id="patch/object" uuid="6adda882-bded-4ca0-9954-3c63bd96d3f4">
@@ -358,54 +780,76 @@ for (int i=0; i < TBLSIZE; ++i)
          <displays/>
          <params>
             <frac32.u.map name="next"/>
-            <frac32.s.map.ratio name="ratio"/>
+            <frac32.u.map name="ratio"/>
          </params>
          <attribs/>
          <includes/>
          <code.declaration><![CDATA[#define TBLSIZE 16384
+#define ENVELOPETBLSIZE 1000
+
 int32_t *waveTable;
-int32_t nextShot=0;
-int32_t step=-1;
-float fade;
+int32_t *envelopeTable;
+int32_t nextShot = 0;
+int32_t step = -1;
+int32_t maxStep = 50;
 int32_t dtStep;
-int32_t currentPos;]]></code.declaration>
+int32_t currentPos;
+int32_t volume = 0;]]></code.declaration>
          <code.init><![CDATA[static int32_t _waveTable[TBLSIZE]  __attribute__ ((section (".sdram")));
 waveTable = &_waveTable[0];
-auto sz = sizeof(waveTable)/sizeof(waveTable[0]);
+
+static int32_t _envelopeTable[ENVELOPETBLSIZE]  __attribute__ ((section (".sdram")));
+envelopeTable = &_envelopeTable[0];
+
 
 for (int i=0; i < TBLSIZE; ++i)
 {
 	waveTable[i] = float_to_q27(1.0*sinf(M_PI*2.0*i/TBLSIZE));
+}
+int attack = ENVELOPETBLSIZE/5;
+for (int i=0; i < attack; ++i)
+{
+	envelopeTable[i] = float_to_q27((float)i/attack);
+}
+
+for (int i=attack; i < ENVELOPETBLSIZE; ++i)
+{
+	envelopeTable[i] = float_to_q27((float)(ENVELOPETBLSIZE-(i-attack))/(ENVELOPETBLSIZE-attack));
 }]]></code.init>
          <code.srate><![CDATA[if (nextShot)
-	{
-		nextShot--;
-	}
-	else
-	{
-		currentPos = rand()%20;
-		step = 0;
-		//fade = 1.0;
-		fade = (float)rand()/RAND_MAX/2.0 + 0.5;
-		dtStep = 500+rand() % 50;
-		int32_t distance = 2000*q27_to_float(param_next) + 1;
-		nextShot += (rand()%distance)+5;
-	}
-	if (step == -1)
-	{
-		outlet_o1 =  0;
-	}
-	else
-	{
-		step++;
-		fade=fade*0.995;
-		if (step == 350)
-			step = -1;
-		currentPos += dtStep;
-		if (currentPos >= TBLSIZE)
-			currentPos -= TBLSIZE;
-		outlet_o1 = fade * waveTable[currentPos];
-	}]]></code.srate>
+{
+	nextShot--;
+}
+else
+{
+	currentPos = rand()%20;
+	step = 0;
+	//fade = 1.0;
+	// f=5-7 samples = 6..8khz
+	dtStep = 3277+rand() % (4000);
+	dtStep = dtStep*q27_to_float(param_ratio);
+	maxStep = 50/q27_to_float(param_ratio);
+	float vol = (float)rand()/RAND_MAX;
+	vol=vol*vol*vol*vol;
+	volume = vol*32;
+	int32_t distance = 2000*q27_to_float(param_next+1) + 1;
+	nextShot += (rand()%distance)+5;
+}
+if (step == -1)
+{
+	outlet_o1 =  0;
+}
+else
+{
+	currentPos += dtStep;
+	if (currentPos >= TBLSIZE)
+		currentPos -= TBLSIZE;
+	auto envValue = envelopeTable[step*ENVELOPETBLSIZE/maxStep];
+	outlet_o1 = volume*___SMMUL(envValue,waveTable[currentPos]);
+	step++;
+	if (step >= maxStep)
+		step = -1;
+}]]></code.srate>
       </object>
    </patchobj>
    <nets>
@@ -419,12 +863,10 @@ for (int i=0; i < TBLSIZE; ++i)
       </net>
       <net>
          <source obj="pink9octs_1" outlet="out"/>
-         <dest obj="mix_2" inlet="in3"/>
          <dest obj="vcf3_1" inlet="in"/>
       </net>
       <net>
          <source obj="pink9octs_2" outlet="out"/>
-         <dest obj="mix_1" inlet="in3"/>
          <dest obj="vcf3_2" inlet="in"/>
       </net>
       <net>
@@ -444,39 +886,12 @@ for (int i=0; i < TBLSIZE; ++i)
          <dest obj="vcf3_2" inlet="pitch"/>
       </net>
       <net>
-         <source obj="smooth2_1" outlet="out"/>
-         <dest obj="*_1" inlet="a"/>
-      </net>
-      <net>
-         <source obj="lfo_pwm_u_1" outlet="pwm"/>
-         <dest obj="smooth2_1" inlet="in"/>
-         <dest obj="smooth2_2" inlet="in"/>
-      </net>
-      <net>
-         <source obj="smooth2_2" outlet="out"/>
-         <dest obj="*_3" inlet="a"/>
-      </net>
-      <net>
          <source obj="*_2" outlet="result"/>
          <dest obj="vcf3_3" inlet="pitch"/>
       </net>
       <net>
          <source obj="*_4" outlet="result"/>
          <dest obj="vcf3_4" inlet="pitch"/>
-      </net>
-      <net>
-         <source obj="smooth2_3" outlet="out"/>
-         <dest obj="*_2" inlet="a"/>
-      </net>
-      <net>
-         <source obj="lfo_pwm_u_2" outlet="pwm"/>
-         <dest obj="smooth2_3" inlet="in"/>
-         <dest obj="smooth2_4" inlet="in"/>
-      </net>
-      <net>
-         <source obj="smooth2_4" outlet="out"/>
-         <dest obj="*_4" inlet="a"/>
-         <dest obj="lp1_2" inlet="freq"/>
       </net>
       <net>
          <source obj="vcf3_3" outlet="out"/>
@@ -503,28 +918,30 @@ for (int i=0; i < TBLSIZE; ++i)
          <dest obj="out_1" inlet="left"/>
       </net>
       <net>
-         <source obj="object_1" outlet="o1"/>
-         <dest obj="lp1_1" inlet="in"/>
+         <source obj="object_3" outlet="o1"/>
+         <dest obj="obj_2" inlet="InL"/>
       </net>
       <net>
-         <source obj="lp1_1" outlet="out"/>
-         <dest obj="obj_1" inlet="InL"/>
+         <source obj="object_4" outlet="o1"/>
+         <dest obj="obj_2" inlet="InR"/>
       </net>
       <net>
-         <source obj="object_2" outlet="o1"/>
-         <dest obj="lp1_2" inlet="in"/>
+         <source obj="obj_2" outlet="r"/>
+         <dest obj="mix_2" inlet="in3"/>
       </net>
       <net>
-         <source obj="lp1_2" outlet="out"/>
-         <dest obj="obj_1" inlet="InR"/>
+         <source obj="obj_2" outlet="l"/>
+         <dest obj="mix_1" inlet="in3"/>
       </net>
       <net>
-         <source obj="obj_1" outlet="l"/>
-         <dest obj="mix_1" inlet="bus_in"/>
+         <source obj="object_5" outlet="val"/>
+         <dest obj="*_4" inlet="a"/>
+         <dest obj="*_2" inlet="a"/>
       </net>
       <net>
-         <source obj="obj_1" outlet="r"/>
-         <dest obj="mix_2" inlet="bus_in"/>
+         <source obj="object_6" outlet="val"/>
+         <dest obj="*_1" inlet="a"/>
+         <dest obj="*_3" inlet="a"/>
       </net>
    </nets>
    <settings>
@@ -532,9 +949,9 @@ for (int i=0; i < TBLSIZE; ++i)
    </settings>
    <notes><![CDATA[]]></notes>
    <windowPos>
-      <x>153</x>
-      <y>46</y>
-      <width>1652</width>
-      <height>863</height>
+      <x>269</x>
+      <y>54</y>
+      <width>1252</width>
+      <height>818</height>
    </windowPos>
 </patch-1.0>
